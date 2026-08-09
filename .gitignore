@@ -23,10 +23,15 @@ dist-ssr
 *.sln
 *.sw?
 
-# Environment variables
+# Environment variables (keep .env.production tracked — VITE_ vars are public)
 .env
 .env.local
 .env.*.local
 
 # Claude Code session data
 .claude/
+
+.vercel
+.env.development*
+.env.test*
+.env.staging*
