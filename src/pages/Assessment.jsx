@@ -20,6 +20,9 @@ export default function Assessment() {
   const setNote = useAssessmentStore((s) => s.setNote)
   const reset = useAssessmentStore((s) => s.reset)
 
+  // Normalize for comparison: lowercase, collapse non-alphanumeric runs to '-'
+  const norm = (s) => (s == null ? '' : String(s)).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+
   const isVisible = (q) => {
     if (!q.branch_on) return true
     const colonIdx = q.branch_on.indexOf(':')
@@ -27,9 +30,12 @@ export default function Assessment() {
       const qKey = q.branch_on.slice(0, colonIdx)
       const expected = q.branch_on.slice(colonIdx + 1)
       const actual = answers[qKey]
-      return actual === expected || String(actual) === expected
+      // Support exact match (covers slugified values) and normalized match
+      // (covers label-text mismatches between Excel Depends_On_Answer and stored choice values)
+      return actual === expected || norm(actual) === norm(expected)
     }
-    return painFlags.includes(q.branch_on)
+    // No colon: show when the referenced parent question has any answer
+    return q.branch_on in answers
   }
 
   const goNextQ = () => useAssessmentStore.setState((s) => ({ currentQuestionIndex: s.currentQuestionIndex + 1 }))
