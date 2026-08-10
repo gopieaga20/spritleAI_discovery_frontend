@@ -24,6 +24,7 @@ export default function OtpModal({ onVerified }) {
   const [phone, setPhone] = useState('')
   const [otp, setOtp] = useState('')
   const [error, setError] = useState('')
+  const [resent, setResent] = useState(false)
 
   const requestMutation = useMutation({
     mutationFn: (data) => apiClient.post('/otp/request/', data),
@@ -50,8 +51,19 @@ export default function OtpModal({ onVerified }) {
   const handleRequestOtp = (e) => {
     e.preventDefault()
     setError('')
+    setResent(false)
     const phoneNumber = phone.trim() ? `${countryCode}${phone.trim()}` : ''
     requestMutation.mutate({ email, full_name: name, company_name: company, phone_number: phoneNumber })
+  }
+
+  const handleResend = () => {
+    setError('')
+    setResent(false)
+    const phoneNumber = phone.trim() ? `${countryCode}${phone.trim()}` : ''
+    requestMutation.mutate(
+      { email, full_name: name, company_name: company, phone_number: phoneNumber },
+      { onSuccess: () => { setOtp(''); setResent(true) } },
+    )
   }
 
   const handleVerifyOtp = (e) => {
@@ -156,6 +168,7 @@ export default function OtpModal({ onVerified }) {
                 />
               </div>
               {error && <p className="text-red-400 text-xs">{error}</p>}
+              {resent && <p className="text-green-400 text-xs">A new code was sent to {email}.</p>}
               <button
                 type="submit"
                 disabled={verifyMutation.isPending || otp.length < 6}
@@ -163,13 +176,23 @@ export default function OtpModal({ onVerified }) {
               >
                 {verifyMutation.isPending ? 'Verifying…' : 'Verify & see results'}
               </button>
-              <button
-                type="button"
-                onClick={() => { setStep('email'); setOtp(''); setError('') }}
-                className="w-full text-slate-500 text-xs hover:text-slate-300 transition-colors py-1"
-              >
-                Use a different email
-              </button>
+              <div className="flex items-center justify-between pt-1">
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={requestMutation.isPending}
+                  className="text-slate-500 text-xs hover:text-blue-400 disabled:opacity-40 transition-colors"
+                >
+                  {requestMutation.isPending ? 'Sending…' : 'Resend code'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setStep('email'); setOtp(''); setError(''); setResent(false) }}
+                  className="text-slate-500 text-xs hover:text-slate-300 transition-colors"
+                >
+                  Use a different email
+                </button>
+              </div>
             </form>
           </>
         )}
