@@ -680,6 +680,7 @@ export default function ConfigManager() {
   })
 
   const stages = data?.stages || []
+  const scoring = data?.scoring || []
 
   // Extract industry choices from Q1.1 (or legacy b_industry) for the QuestionForm dropdown
   const { industryChoices, industryQId } = (() => {
@@ -694,7 +695,7 @@ export default function ConfigManager() {
     <div>
       {/* Tab bar */}
       <div className="flex gap-1 mb-6 border-b border-white/10 pb-0">
-        {[['stages', 'Survey Stages'], ['import', 'Import']].map(([key, label]) => (
+        {[['stages', 'Survey Stages'], ['scoring', 'Scoring'], ['import', 'Import']].map(([key, label]) => (
           <button
             key={key}
             onClick={() => setTab(key)}
@@ -736,6 +737,64 @@ export default function ConfigManager() {
           {stages.map((stage) => (
             <StageCard key={stage.id} stage={stage} qc={qc} industryChoices={industryChoices} industryQId={industryQId} />
           ))}
+        </div>
+      )}
+
+      {/* Scoring tab */}
+      {tab === 'scoring' && (
+        <div>
+          {isLoading && <div className="text-slate-400 text-sm animate-pulse">Loading scoring…</div>}
+          {isError && <div className="text-red-400 text-sm">Failed to load scoring.</div>}
+          {!isLoading && scoring.length === 0 && (
+            <div className="text-slate-500 text-sm">No scoring dimensions configured.</div>
+          )}
+          <div className="space-y-6">
+            {scoring.map((dim) => (
+              <div key={dim.id} className="rounded-2xl border border-white/10 bg-[#0f172a] overflow-hidden">
+                <div className="px-5 py-4 flex items-center gap-3 border-b border-white/5">
+                  <div
+                    className="w-3 h-3 rounded-full shrink-0"
+                    style={{ backgroundColor: dim.color || '#6366f1' }}
+                  />
+                  <div>
+                    <span className="font-semibold text-white">{dim.label}</span>
+                    <span className="ml-2 text-xs text-slate-500">weight {dim.weight}</span>
+                  </div>
+                  <span className="ml-auto text-xs bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-full px-2 py-0.5">
+                    {dim.questions.length} questions
+                  </span>
+                </div>
+                <div className="px-5 divide-y divide-white/5">
+                  {dim.questions.map((sq, idx) => (
+                    <div key={sq.id} className="py-3">
+                      <div className="flex items-start gap-3">
+                        <span className="text-xs text-slate-600 w-5 pt-0.5 shrink-0">{idx + 1}</span>
+                        <div className="flex-1">
+                          <div className="text-xs font-mono text-slate-500 mb-0.5">{sq.id}</div>
+                          <div className="text-sm text-white leading-snug">{sq.question_text}</div>
+                          {sq.label && sq.label !== sq.question_text && (
+                            <div className="text-xs text-slate-500 mt-0.5">{sq.label}</div>
+                          )}
+                          {sq.options?.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mt-2">
+                              {sq.options.map((opt, i) => (
+                                <span
+                                  key={i}
+                                  className="text-xs px-2 py-0.5 rounded-full border border-white/10 bg-white/5 text-slate-400"
+                                >
+                                  {i}pt: {opt}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

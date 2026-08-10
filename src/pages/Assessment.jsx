@@ -79,6 +79,11 @@ export default function Assessment() {
   const isLastQuestion = currentQuestionIndex >= questions.length - 1
   const currentAnswer = answers[currentQuestion?.id]
 
+  // Choice/scale questions must have an answer before proceeding
+  const REQUIRES_ANSWER = ['choice-row', 'multi-select', 'choice-scale', 'scored-4pt']
+  const needsAnswer = currentQuestion && REQUIRES_ANSWER.includes(currentQuestion.question_type)
+  const canProceed = !needsAnswer || currentAnswer != null
+
   const stageNavItems = stages.map((s) => ({ id: s.id, label: s.label, icon: s.icon }))
 
   const handleNext = () => {
@@ -174,8 +179,8 @@ export default function Assessment() {
 
               <button
                 onClick={handleNext}
-                disabled={submitMutation.isPending}
-                className="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-semibold text-sm transition-colors"
+                disabled={submitMutation.isPending || !canProceed}
+                className="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm transition-colors"
               >
                 {submitMutation.isPending
                   ? 'Submitting…'
