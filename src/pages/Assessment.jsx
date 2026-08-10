@@ -34,7 +34,12 @@ export default function Assessment() {
       // (covers label-text mismatches between Excel Depends_On_Answer and stored choice values)
       return actual === expected || norm(actual) === norm(expected)
     }
-    // No colon: show when the referenced parent question has any answer
+    // No colon: parent question must simply be answered.
+    // Exception: cross-stage deps (e.g. Q5.1→Q4.10) are ordering hints only —
+    // always show them so navigating to a stage doesn't silently show 0 questions.
+    const parentStageNum = q.branch_on.match(/^Q(\d+)/)?.[1]
+    const thisStageNum = q.id.match(/^Q(\d+)/)?.[1]
+    if (parentStageNum && thisStageNum && parentStageNum !== thisStageNum) return true
     return q.branch_on in answers
   }
 
