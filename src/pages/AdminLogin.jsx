@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import SpritleLogo from '../components/SpritleLogo.jsx'
 import { useLogin } from '../hooks/useAuth.js'
 
 export default function AdminLogin() {
@@ -18,19 +19,52 @@ export default function AdminLogin() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0b0e17] flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="text-4xl mb-3">⚡</div>
-          <h1 className="text-2xl font-bold text-white">Admin Console</h1>
-          <p className="text-slate-400 text-sm mt-1">Spritle AI Discovery Platform</p>
+    <div
+      style={{
+        minHeight: '100vh',
+        background: 'var(--ds-paper)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+        fontFamily: "'IBM Plex Sans', sans-serif",
+      }}
+    >
+      <div style={{ width: '100%', maxWidth: 420 }}>
+        {/* Brand */}
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 18 }}>
+            <SpritleLogo height={36} variant="color" />
+          </div>
+          <h1
+            className="font-newsreader"
+            style={{ fontSize: 26, fontWeight: 500, color: 'var(--ds-ink)', margin: '0 0 4px' }}
+          >
+            Admin Console
+          </h1>
+          <p
+            className="font-plex-mono"
+            style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ds-ink-faint)', margin: 0 }}
+          >
+            AI Discovery Platform
+          </p>
         </div>
+
+        {/* Form card */}
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl border border-white/10 bg-[#0f172a] p-8 space-y-5 shadow-2xl"
+          style={{
+            background: 'var(--ds-card)',
+            border: '1px solid var(--ds-line)',
+            borderRadius: 14,
+            padding: 32,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 18,
+          }}
         >
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Username</label>
+            <label className="ds-label">Username</label>
             <input
               type="text"
               required
@@ -38,11 +72,12 @@ export default function AdminLogin() {
               onChange={(e) => setUsername(e.target.value)}
               autoComplete="username"
               placeholder="admin"
-              className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500"
+              className="ds-input"
             />
           </div>
+
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Password</label>
+            <label className="ds-label">Password</label>
             <input
               type="password"
               required
@@ -50,18 +85,28 @@ export default function AdminLogin() {
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
               placeholder="••••••••"
-              className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500"
+              className="ds-input"
             />
           </div>
+
           {error && (
-            <p className="text-red-400 text-xs bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+            <div
+              style={{
+                fontSize: 13, color: '#c0392b',
+                background: 'rgba(192,57,43,0.06)',
+                border: '1px solid rgba(192,57,43,0.2)',
+                borderRadius: 8, padding: '10px 14px',
+              }}
+            >
               {error}
-            </p>
+            </div>
           )}
+
           <button
             type="submit"
             disabled={login.isPending}
-            className="w-full rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-semibold py-3 text-sm transition-colors"
+            className="ds-btn ds-btn-solid"
+            style={{ justifyContent: 'center', marginTop: 4 }}
           >
             {login.isPending ? 'Signing in…' : 'Sign in'}
           </button>

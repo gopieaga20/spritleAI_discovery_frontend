@@ -1,3 +1,5 @@
+import { Check } from 'lucide-react'
+
 export default function MultiSelect({ choices, value = [], onChange, maxSelect, scoreMap = {} }) {
   const toggle = (v) => {
     if (value.includes(v)) {
@@ -9,35 +11,39 @@ export default function MultiSelect({ choices, value = [], onChange, maxSelect, 
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-      {choices.map((choice) => {
-        const selected = value.includes(choice.value)
-        const disabled = !selected && maxSelect && value.length >= maxSelect
-        return (
-          <button
-            key={choice.value}
-            onClick={() => toggle(choice.value)}
-            disabled={!!disabled}
-            className={[
-              'flex items-center gap-2 rounded-xl border px-4 py-3 text-left transition-all text-sm font-medium',
-              selected
-                ? 'border-blue-500 bg-blue-500/10 text-white'
-                : disabled
-                ? 'border-white/5 bg-white/2 text-slate-600 cursor-not-allowed'
-                : 'border-white/10 bg-white/5 text-slate-300 hover:border-white/30 hover:text-white',
-            ].join(' ')}
-          >
-            <span className={`w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center text-xs ${selected ? 'bg-blue-500 border-blue-500' : 'border-white/30'}`}>
-              {selected && '✓'}
-            </span>
-            {choice.icon && <span>{choice.icon}</span>}
-            <span>{choice.label}</span>
-          </button>
-        )
-      })}
+    <div>
+      <div
+        className="ds-options-grid"
+        style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}
+      >
+        {choices.map((choice) => {
+          const selected = value.includes(choice.value)
+          const disabled = !selected && maxSelect && value.length >= maxSelect
+          return (
+            <button
+              key={choice.value}
+              className="ds-option"
+              onClick={() => toggle(choice.value)}
+              aria-pressed={selected}
+              disabled={!!disabled}
+              style={{ opacity: disabled ? 0.4 : 1, cursor: disabled ? 'not-allowed' : 'pointer' }}
+            >
+              <span className="ds-checkbox">
+                {selected && <Check size={11} strokeWidth={3} color="#fff" />}
+              </span>
+              {choice.icon && <span style={{ fontSize: '1.1em', flexShrink: 0 }}>{choice.icon}</span>}
+              <span>{choice.label}</span>
+            </button>
+          )
+        })}
+      </div>
+
       {maxSelect && (
-        <p className="col-span-full text-xs text-slate-500 mt-1">
-          Select up to {maxSelect} ({value.length} selected)
+        <p
+          className="font-plex-mono"
+          style={{ fontSize: 11, color: 'var(--ds-ink-faint)', marginTop: 10 }}
+        >
+          Select up to {maxSelect} · {value.length} selected
         </p>
       )}
     </div>

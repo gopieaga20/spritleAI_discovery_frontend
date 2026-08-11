@@ -1,6 +1,36 @@
 import { useQuery } from '@tanstack/react-query'
 import apiClient from '../../api/client.js'
 
+function SectionLabel({ children }) {
+  return (
+    <h3
+      className="font-plex-mono"
+      style={{
+        fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase',
+        color: 'var(--ds-ink-faint)', marginBottom: 12,
+      }}
+    >
+      {children}
+    </h3>
+  )
+}
+
+function MiniBar({ label, value, color }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+      <span style={{ fontSize: 12, color: 'var(--ds-ink-soft)', width: 112, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {label}
+      </span>
+      <div className="ds-bar-track" style={{ flex: 1 }}>
+        <div className="ds-bar-fill" style={{ width: `${value}%`, backgroundColor: color || 'var(--ds-teal)' }} />
+      </div>
+      <span className="font-plex-mono" style={{ fontSize: 11, color: 'var(--ds-ink-faint)', width: 28, textAlign: 'right' }}>
+        {Math.round(value)}
+      </span>
+    </div>
+  )
+}
+
 export default function SessionDetail({ session, onClose }) {
   const { data, isLoading } = useQuery({
     queryKey: ['admin-session', session.id],
@@ -9,127 +39,185 @@ export default function SessionDetail({ session, onClose }) {
   })
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-end z-50">
-      <div className="w-full max-w-lg bg-[#0f172a] border-l border-white/10 overflow-y-auto">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 sticky top-0 bg-[#0f172a]">
+    <div
+      style={{
+        position: 'fixed', inset: 0,
+        background: 'rgba(22,35,43,0.45)',
+        backdropFilter: 'blur(4px)',
+        display: 'flex', justifyContent: 'flex-end',
+        zIndex: 50,
+      }}
+    >
+      <div
+        style={{
+          width: '100%', maxWidth: 480,
+          background: 'var(--ds-card)',
+          borderLeft: '1px solid var(--ds-line)',
+          overflowY: 'auto',
+          fontFamily: "'IBM Plex Sans', sans-serif",
+          color: 'var(--ds-ink)',
+        }}
+      >
+        {/* Sticky header */}
+        <div
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '16px 24px',
+            borderBottom: '1px solid var(--ds-line)',
+            position: 'sticky', top: 0,
+            background: 'var(--ds-card)', zIndex: 1,
+          }}
+        >
           <div>
-            <div className="font-bold text-white">{session.company_name || 'Session Detail'}</div>
-            <div className="text-xs text-slate-400">{session.client_email}</div>
+            <div style={{ fontWeight: 700, fontSize: 15 }}>{session.company_name || 'Session Detail'}</div>
+            <div style={{ fontSize: 12, color: 'var(--ds-ink-soft)', marginTop: 2 }}>{session.client_email}</div>
           </div>
-          <div className="flex items-center gap-2">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {session.session_id && (
               <a
                 href={`/results/${session.session_id}?view=admin`}
                 target="_blank"
                 rel="noreferrer"
-                className="text-xs text-blue-400 hover:text-blue-300 border border-blue-500/30 hover:border-blue-400/50 rounded px-2 py-1 transition-colors"
+                style={{
+                  fontSize: 12, color: 'var(--ds-teal)',
+                  border: '1px solid rgba(30,122,107,0.3)',
+                  borderRadius: 6, padding: '4px 10px',
+                  textDecoration: 'none', transition: 'border-color 0.15s',
+                }}
               >
-                View Full Report ↗
+                View Report ↗
               </a>
             )}
-            <button onClick={onClose} className="text-slate-400 hover:text-white text-xl ml-1">✕</button>
+            <button
+              onClick={onClose}
+              style={{
+                fontSize: 18, color: 'var(--ds-ink-faint)',
+                background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px',
+              }}
+            >
+              ✕
+            </button>
           </div>
         </div>
 
         {isLoading ? (
-          <div className="p-6 text-slate-400 text-sm animate-pulse">Loading…</div>
+          <p className="font-plex-mono" style={{ padding: 24, color: 'var(--ds-ink-faint)', fontSize: 13 }}>
+            Loading…
+          </p>
         ) : !data ? (
-          <div className="p-6 text-red-400 text-sm">Failed to load detail.</div>
+          <p style={{ padding: 24, color: '#c0392b', fontSize: 13 }}>Failed to load detail.</p>
         ) : (
-          <div className="p-6 space-y-6">
+          <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 28 }}>
+
             {/* Summary metrics */}
-            <div className="grid grid-cols-3 gap-3">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
               {[
                 { label: 'Score', value: data.overall_score ?? '—' },
                 { label: 'Tier', value: data.readiness_tier || '—' },
                 { label: 'Automation', value: `${data.automation_potential ?? 0}%` },
               ].map((m) => (
-                <div key={m.label} className="rounded-xl bg-white/5 border border-white/10 px-3 py-3 text-center">
-                  <div className="text-lg font-bold text-white">{m.value}</div>
-                  <div className="text-xs text-slate-500 mt-0.5">{m.label}</div>
+                <div
+                  key={m.label}
+                  style={{
+                    background: 'var(--ds-paper)', border: '1px solid var(--ds-line)',
+                    borderRadius: 10, padding: '12px 8px', textAlign: 'center',
+                  }}
+                >
+                  <div style={{ fontSize: 20, fontWeight: 700 }}>{m.value}</div>
+                  <div style={{ fontSize: 11, color: 'var(--ds-ink-faint)', marginTop: 3 }}>{m.label}</div>
                 </div>
               ))}
             </div>
 
-            {/* Dimension scores */}
+            {/* Dimension breakdown */}
             {data.dimension_scores?.length > 0 && (
               <div>
-                <h3 className="text-xs text-slate-400 uppercase tracking-widest mb-3">Dimension Breakdown</h3>
+                <SectionLabel>Dimension Breakdown</SectionLabel>
                 {data.dimension_scores.map((d) => (
-                  <div key={d.dimension_id} className="flex items-center gap-3 mb-2">
-                    <span className="text-xs text-slate-300 w-28 truncate">{d.label || d.dimension_id}</span>
-                    <div className="flex-1 h-1.5 rounded-full bg-white/10">
-                      <div className="h-1.5 rounded-full" style={{ width: `${d.raw_score}%`, backgroundColor: d.color || '#3b82f6' }} />
-                    </div>
-                    <span className="text-xs text-slate-400 w-8 text-right">{Math.round(d.raw_score)}</span>
-                  </div>
+                  <MiniBar key={d.dimension_id} label={d.label || d.dimension_id} value={d.raw_score} color={d.color} />
                 ))}
               </div>
             )}
 
-            {/* KB Readiness Result */}
+            {/* KB Readiness */}
             {data.kb_result && (
               <div>
-                <h3 className="text-xs text-slate-400 uppercase tracking-widest mb-3">Industry AI Readiness</h3>
-                <div className="rounded-xl bg-white/5 border border-white/10 p-4 mb-3">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-bold text-white">{data.kb_result.readiness_tier_label}</span>
-                    <span className="text-2xl font-extrabold text-blue-400">{data.kb_result.overall_readiness_score}</span>
+                <SectionLabel>Industry AI Readiness</SectionLabel>
+                <div
+                  style={{
+                    background: 'var(--ds-paper)', border: '1px solid var(--ds-line)',
+                    borderRadius: 10, padding: 16, marginBottom: 12,
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                    <span style={{ fontWeight: 700, fontSize: 14 }}>{data.kb_result.readiness_tier_label}</span>
+                    <span style={{ fontSize: 26, fontWeight: 800, color: 'var(--ds-teal)' }}>{data.kb_result.overall_readiness_score}</span>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-xs mb-3">
-                    <div className="text-slate-400">Org Size: <span className="text-white">{data.kb_result.org_size_band}</span></div>
-                    <div className="text-slate-400">Complexity: <span className="text-white">{data.kb_result.complexity_tier}</span></div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, fontSize: 12, marginBottom: 12 }}>
+                    <div style={{ color: 'var(--ds-ink-soft)' }}>
+                      Org Size: <strong style={{ color: 'var(--ds-ink)' }}>{data.kb_result.org_size_band}</strong>
+                    </div>
+                    <div style={{ color: 'var(--ds-ink-soft)' }}>
+                      Complexity: <strong style={{ color: 'var(--ds-ink)' }}>{data.kb_result.complexity_tier}</strong>
+                    </div>
                     {data.kb_result.estimated_cost_low != null && (
-                      <div className="text-slate-400 col-span-2">
-                        Cost: <span className="text-white">${data.kb_result.estimated_cost_low?.toLocaleString()} – ${data.kb_result.estimated_cost_high?.toLocaleString()}</span>
-                        {' · '}Payback: <span className="text-white">{data.kb_result.payback_low_months}–{data.kb_result.payback_high_months} months</span>
+                      <div style={{ color: 'var(--ds-ink-soft)', gridColumn: '1/-1' }}>
+                        Cost:{' '}
+                        <strong style={{ color: 'var(--ds-ink)' }}>
+                          ${data.kb_result.estimated_cost_low?.toLocaleString()} – ${data.kb_result.estimated_cost_high?.toLocaleString()}
+                        </strong>
+                        {' · '}Payback:{' '}
+                        <strong style={{ color: 'var(--ds-ink)' }}>
+                          {data.kb_result.payback_low_months}–{data.kb_result.payback_high_months} months
+                        </strong>
                       </div>
                     )}
                   </div>
                   {Object.entries(data.kb_result.section_scores || {}).map(([name, sv]) => (
-                    <div key={name} className="flex items-center gap-2 mb-1.5">
-                      <span className="text-xs text-slate-400 w-36 truncate">{name}</span>
-                      <div className="flex-1 h-1.5 rounded-full bg-white/10">
-                        <div className="h-1.5 rounded-full bg-indigo-500" style={{ width: `${sv.raw_score}%` }} />
-                      </div>
-                      <span className="text-xs text-slate-400 w-8 text-right">{Math.round(sv.raw_score)}</span>
-                    </div>
+                    <MiniBar key={name} label={name} value={sv.raw_score} color="var(--ds-teal)" />
                   ))}
                 </div>
                 {data.kb_result.key_strengths?.length > 0 && (
-                  <div className="mb-2">
-                    <span className="text-xs text-green-400 font-semibold">Strengths: </span>
-                    <span className="text-xs text-slate-300">{data.kb_result.key_strengths.join(', ')}</span>
-                  </div>
+                  <p style={{ fontSize: 12, marginBottom: 6 }}>
+                    <span style={{ color: '#1a7a2e', fontWeight: 600 }}>Strengths: </span>
+                    <span style={{ color: 'var(--ds-ink-soft)' }}>{data.kb_result.key_strengths.join(', ')}</span>
+                  </p>
                 )}
                 {data.kb_result.key_gaps?.length > 0 && (
-                  <div className="mb-2">
-                    <span className="text-xs text-orange-400 font-semibold">Gaps: </span>
-                    <span className="text-xs text-slate-300">{data.kb_result.key_gaps.join(', ')}</span>
-                  </div>
+                  <p style={{ fontSize: 12, marginBottom: 6 }}>
+                    <span style={{ color: '#d35400', fontWeight: 600 }}>Gaps: </span>
+                    <span style={{ color: 'var(--ds-ink-soft)' }}>{data.kb_result.key_gaps.join(', ')}</span>
+                  </p>
                 )}
                 {data.kb_result.critical_risks?.length > 0 && (
-                  <div>
-                    <span className="text-xs text-red-400 font-semibold">Critical Risks: </span>
-                    <span className="text-xs text-slate-300">{data.kb_result.critical_risks.join('; ')}</span>
-                  </div>
+                  <p style={{ fontSize: 12 }}>
+                    <span style={{ color: '#c0392b', fontWeight: 600 }}>Critical Risks: </span>
+                    <span style={{ color: 'var(--ds-ink-soft)' }}>{data.kb_result.critical_risks.join('; ')}</span>
+                  </p>
                 )}
               </div>
             )}
 
-            {/* Recommended Agents */}
+            {/* Recommended agents */}
             {data.agents?.length > 0 && (
               <div>
-                <h3 className="text-xs text-slate-400 uppercase tracking-widest mb-3">Recommended AI Agents</h3>
-                <div className="space-y-2">
+                <SectionLabel>Recommended AI Agents</SectionLabel>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {data.agents.map((a) => (
-                    <div key={a.id} className="rounded-lg bg-white/5 border border-white/10 px-3 py-2 flex items-center gap-3">
-                      <span className="text-lg">{a.icon || '🤖'}</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-xs font-semibold text-white truncate">{a.name}</div>
-                        <div className="text-xs text-slate-400">{a.category} · Phase {a.phase}</div>
+                    <div
+                      key={a.id}
+                      style={{
+                        background: 'var(--ds-paper)', border: '1px solid var(--ds-line)',
+                        borderRadius: 8, padding: '10px 14px',
+                        display: 'flex', alignItems: 'center', gap: 12,
+                      }}
+                    >
+                      <span style={{ fontSize: 20 }}>{a.icon || '🤖'}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.name}</div>
+                        <div style={{ fontSize: 12, color: 'var(--ds-ink-soft)' }}>{a.category} · Phase {a.phase}</div>
                       </div>
-                      <span className="text-xs text-slate-500">#{a.rank}</span>
+                      <span className="font-plex-mono" style={{ fontSize: 11, color: 'var(--ds-ink-faint)' }}>#{a.rank}</span>
                     </div>
                   ))}
                 </div>
@@ -139,10 +227,18 @@ export default function SessionDetail({ session, onClose }) {
             {/* Pain flags */}
             {data.pain_flags?.length > 0 && (
               <div>
-                <h3 className="text-xs text-slate-400 uppercase tracking-widest mb-3">Key Challenges Identified</h3>
-                <div className="flex flex-wrap gap-2">
+                <SectionLabel>Key Challenges</SectionLabel>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {data.pain_flags.map((f) => (
-                    <span key={f.id} className="text-xs bg-red-500/10 border border-red-500/20 text-red-300 rounded-full px-2 py-1">
+                    <span
+                      key={f.id}
+                      style={{
+                        fontSize: 12, padding: '4px 12px', borderRadius: 20,
+                        color: '#c0392b',
+                        background: 'rgba(192,57,43,0.07)',
+                        border: '1px solid rgba(192,57,43,0.2)',
+                      }}
+                    >
                       {f.label}
                     </span>
                   ))}
@@ -150,10 +246,10 @@ export default function SessionDetail({ session, onClose }) {
               </div>
             )}
 
-            {/* Answers grouped by stage in survey order */}
+            {/* Assessment snapshot */}
             {data.answers?.length > 0 && (
               <div>
-                <h3 className="text-xs text-slate-400 uppercase tracking-widest mb-3">Assessment Snapshot</h3>
+                <SectionLabel>Assessment Snapshot</SectionLabel>
                 {(() => {
                   const STAGE_ORDER = ['business', 'pain', 'rootcause', 'data', 'technology', 'compliance', 'readiness', 'output']
                   const groups = {}
@@ -169,21 +265,36 @@ export default function SessionDetail({ session, onClose }) {
                     ...Object.keys(groups).filter((k) => !STAGE_ORDER.includes(k)),
                   ]
                   return ordered.map((stageKey) => (
-                    <div key={stageKey} className="mb-5">
-                      <div className="text-xs font-semibold text-blue-400 uppercase tracking-widest mb-2 border-b border-white/5 pb-1">
+                    <div key={stageKey} style={{ marginBottom: 20 }}>
+                      <div
+                        className="font-plex-mono"
+                        style={{
+                          fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase',
+                          color: 'var(--ds-teal)', fontWeight: 600,
+                          borderBottom: '1px solid var(--ds-line-soft)', paddingBottom: 6, marginBottom: 10,
+                        }}
+                      >
                         {labelMap[stageKey]}
                       </div>
-                      <div className="space-y-2">
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                         {groups[stageKey].map((a, i) => (
-                          <div key={i} className="rounded-lg bg-white/5 border border-white/10 px-3 py-2">
-                            <div className="text-xs text-slate-400 mb-0.5 leading-snug">
+                          <div
+                            key={i}
+                            style={{
+                              background: 'var(--ds-paper)', border: '1px solid var(--ds-line-soft)',
+                              borderRadius: 8, padding: '10px 14px',
+                            }}
+                          >
+                            <div style={{ fontSize: 12, color: 'var(--ds-ink-soft)', marginBottom: 3, lineHeight: 1.4 }}>
                               {a.question_prompt || a.question_key}
                             </div>
-                            <div className="text-sm text-white font-medium">
+                            <div style={{ fontSize: 14, fontWeight: 600 }}>
                               {a.answer_label || String(a.answer_value ?? '—')}
                             </div>
                             {a.note_text && (
-                              <div className="text-xs text-slate-500 italic mt-1">{a.note_text}</div>
+                              <div style={{ fontSize: 12, color: 'var(--ds-ink-faint)', fontStyle: 'italic', marginTop: 4 }}>
+                                {a.note_text}
+                              </div>
                             )}
                           </div>
                         ))}

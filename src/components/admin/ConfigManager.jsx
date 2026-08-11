@@ -24,10 +24,6 @@ const TYPE_LABELS = {
 
 const TYPE_HAS_CHOICES = ['choice-grid', 'choice-row', 'multi-select', 'multi-select-ranked', 'scored-4pt']
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 function initOptions(typeConfig) {
   const choices = typeConfig?.choices || []
   const scoreMap = typeConfig?.score_map || {}
@@ -38,11 +34,11 @@ function initOptions(typeConfig) {
 }
 
 function emptyQuestionForm(stageId) {
-  return { stage_id: stageId, prompt: '', subtext: '', question_type: 'choice-row', options: [], pain_key: '', branch_on: '', sort_order: '', is_active: true }
+  return { stage_id: stageId, prompt: '', subtext: '', question_type: 'choice-row', options: [], tags: '', branch_on: '', sort_order: '', is_active: true }
 }
 
 // ---------------------------------------------------------------------------
-// Options editor — per-row label + score inputs
+// OptionsEditor
 // ---------------------------------------------------------------------------
 
 function OptionsEditor({ options, onChange }) {
@@ -53,25 +49,29 @@ function OptionsEditor({ options, onChange }) {
 
   return (
     <div>
-      <div className="space-y-1.5 mb-2">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
         {options.map((opt, i) => (
-          <div key={i} className="flex items-center gap-2">
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <input
               value={opt.label}
               onChange={(e) => update(i, 'label', e.target.value)}
               placeholder={`Option ${i + 1}`}
-              className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50"
+              className="ds-input"
+              style={{ flex: 1 }}
             />
             <input
               type="number"
               value={opt.score}
               onChange={(e) => update(i, 'score', e.target.value)}
               placeholder="Score"
-              className="w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 text-center"
+              className="ds-input font-plex-mono"
+              style={{ width: 72, textAlign: 'center' }}
             />
             <button
               onClick={() => remove(i)}
-              className="text-slate-500 hover:text-red-400 text-base leading-none px-1 transition-colors"
+              style={{ color: 'var(--ds-ink-faint)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: '0 4px', transition: 'color 0.15s' }}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#c0392b'}
+              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--ds-ink-faint)'}
             >
               ×
             </button>
@@ -80,7 +80,15 @@ function OptionsEditor({ options, onChange }) {
       </div>
       <button
         onClick={add}
-        className="w-full py-1.5 border border-dashed border-white/15 hover:border-blue-500/30 text-slate-500 hover:text-blue-400 rounded-lg text-xs transition-colors"
+        style={{
+          width: '100%', padding: '6px 0',
+          border: '1px dashed var(--ds-line)',
+          background: 'none', borderRadius: 8,
+          fontSize: 12, color: 'var(--ds-ink-faint)', cursor: 'pointer',
+          fontFamily: 'inherit', transition: 'border-color 0.15s, color 0.15s',
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--ds-teal)'; e.currentTarget.style.color = 'var(--ds-teal)' }}
+        onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--ds-line)'; e.currentTarget.style.color = 'var(--ds-ink-faint)' }}
       >
         + Add option
       </button>
@@ -93,7 +101,7 @@ function emptyStageForm() {
 }
 
 // ---------------------------------------------------------------------------
-// Question edit / add form
+// QuestionForm
 // ---------------------------------------------------------------------------
 
 function QuestionForm({ initial, stageId, onSave, onCancel, isSaving, industryChoices = [], industryQId = 'Q1.1' }) {
@@ -127,7 +135,7 @@ function QuestionForm({ initial, stageId, onSave, onCancel, isSaving, industryCh
       question_type: form.question_type,
       choices: choicesStr,
       score_map: Object.keys(scoreMap).length > 0 ? scoreMap : undefined,
-      pain_key: form.pain_key,
+      tags: form.tags,
       branch_on: form.branch_on,
       sort_order: form.sort_order || undefined,
       is_active: form.is_active,
@@ -135,34 +143,26 @@ function QuestionForm({ initial, stageId, onSave, onCancel, isSaving, industryCh
   }
 
   return (
-    <div className="bg-[#0b0e17] border border-blue-500/20 rounded-xl p-4 mt-2 space-y-3">
-      <div className="grid sm:grid-cols-2 gap-3">
-        <div className="sm:col-span-2">
-          <label className="text-xs text-slate-400 mb-1 block">Question prompt *</label>
+    <div className="ds-subform" style={{ borderColor: 'rgba(30,122,107,0.25)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div style={{ gridColumn: '1/-1' }}>
+          <label className="ds-label">Question prompt *</label>
           <textarea
             rows={2}
             value={form.prompt}
             onChange={(e) => set('prompt', e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 resize-none"
+            className="ds-textarea"
             placeholder="Enter the question text…"
+            style={{ minHeight: 'unset', height: 64, backgroundImage: 'none', lineHeight: 1.5, padding: '8px 12px' }}
           />
         </div>
         <div>
-          <label className="text-xs text-slate-400 mb-1 block">Helper text</label>
-          <input
-            value={form.subtext}
-            onChange={(e) => set('subtext', e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50"
-            placeholder="Optional sub-text shown below the question"
-          />
+          <label className="ds-label">Helper text</label>
+          <input value={form.subtext} onChange={(e) => set('subtext', e.target.value)} className="ds-input" placeholder="Optional sub-text" />
         </div>
         <div>
-          <label className="text-xs text-slate-400 mb-1 block">Answer type *</label>
-          <select
-            value={form.question_type}
-            onChange={(e) => set('question_type', e.target.value)}
-            className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500/50"
-          >
+          <label className="ds-label">Answer type *</label>
+          <select value={form.question_type} onChange={(e) => set('question_type', e.target.value)} className="ds-select">
             {QUESTION_TYPES.map((t) => (
               <option key={t} value={t}>{TYPE_LABELS[t] || t}</option>
             ))}
@@ -170,31 +170,22 @@ function QuestionForm({ initial, stageId, onSave, onCancel, isSaving, industryCh
         </div>
 
         {showChoices && (
-          <div className="sm:col-span-2">
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs text-slate-400">Options &amp; Scores</label>
-              <span className="text-xs text-slate-600">Label → Score (leave score blank if n/a)</span>
+          <div style={{ gridColumn: '1/-1' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <label className="ds-label" style={{ margin: 0 }}>Options &amp; Scores</label>
+              <span style={{ fontSize: 11, color: 'var(--ds-ink-faint)' }}>Label → Score (leave score blank if n/a)</span>
             </div>
             <OptionsEditor options={form.options} onChange={(opts) => set('options', opts)} />
           </div>
         )}
 
         <div>
-          <label className="text-xs text-slate-400 mb-1 block">Tags <span className="text-slate-600">(optional)</span></label>
-          <input
-            value={form.pain_key}
-            onChange={(e) => set('pain_key', e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50"
-            placeholder="e.g. Scheduling_Automation,No_Show"
-          />
+          <label className="ds-label">Tags <span style={{ color: 'var(--ds-ink-faint)', textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
+          <input value={form.tags} onChange={(e) => set('tags', e.target.value)} className="ds-input" placeholder="Scheduling_Automation,No_Show" />
         </div>
         <div>
-          <label className="text-xs text-slate-400 mb-1 block">Show only for industry</label>
-          <select
-            value={industrySelectValue}
-            onChange={(e) => handleIndustryChange(e.target.value)}
-            className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500/50"
-          >
+          <label className="ds-label">Show only for industry</label>
+          <select value={industrySelectValue} onChange={(e) => handleIndustryChange(e.target.value)} className="ds-select">
             <option value="">All industries (always show)</option>
             {industryChoices.map((c) => (
               <option key={c.value} value={c.value}>{c.label}</option>
@@ -202,46 +193,36 @@ function QuestionForm({ initial, stageId, onSave, onCancel, isSaving, industryCh
           </select>
         </div>
         <div>
-          <label className="text-xs text-slate-400 mb-1 block">Sort order</label>
-          <input
-            type="number"
-            value={form.sort_order}
-            onChange={(e) => set('sort_order', e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500/50"
-          />
+          <label className="ds-label">Sort order</label>
+          <input type="number" value={form.sort_order} onChange={(e) => set('sort_order', e.target.value)} className="ds-input" />
         </div>
-        <div className="flex items-center gap-2 pt-5">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 20 }}>
           <input
             type="checkbox"
-            id={`active-${form.prompt}`}
+            id={`qactive-${form.prompt}`}
             checked={form.is_active}
             onChange={(e) => set('is_active', e.target.checked)}
-            className="accent-blue-500"
+            style={{ accentColor: 'var(--ds-teal)', width: 14, height: 14 }}
           />
-          <label htmlFor={`active-${form.prompt}`} className="text-sm text-slate-300">Active</label>
+          <label htmlFor={`qactive-${form.prompt}`} style={{ fontSize: 13, color: 'var(--ds-ink)', cursor: 'pointer' }}>Active</label>
         </div>
       </div>
-      <div className="flex gap-2 pt-1">
+      <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
         <button
           onClick={() => onSave(buildPayload())}
           disabled={isSaving || !form.prompt.trim()}
-          className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white text-sm font-semibold rounded-lg transition-colors"
+          className="ds-btn ds-btn-solid ds-btn-xs"
         >
           {isSaving ? 'Saving…' : 'Save'}
         </button>
-        <button
-          onClick={onCancel}
-          className="px-4 py-1.5 border border-white/10 text-slate-400 hover:text-white text-sm rounded-lg transition-colors"
-        >
-          Cancel
-        </button>
+        <button onClick={onCancel} className="ds-btn ds-btn-ghost ds-btn-xs">Cancel</button>
       </div>
     </div>
   )
 }
 
 // ---------------------------------------------------------------------------
-// Stage edit form (inline in header)
+// StageForm
 // ---------------------------------------------------------------------------
 
 function StageForm({ stage, onSave, onCancel, isSaving }) {
@@ -255,47 +236,46 @@ function StageForm({ stage, onSave, onCancel, isSaving }) {
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }))
 
   return (
-    <div className="bg-[#0b0e17] border border-yellow-500/20 rounded-xl p-4 mt-3 space-y-3">
-      <div className="grid sm:grid-cols-3 gap-3">
-        <div className="sm:col-span-2">
-          <label className="text-xs text-slate-400 mb-1 block">Stage label *</label>
-          <input value={form.label} onChange={(e) => set('label', e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-500/50" />
+    <div className="ds-subform" style={{ borderColor: 'rgba(210,148,30,0.3)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 100px', gap: 12 }}>
+        <div style={{ gridColumn: '1/3' }}>
+          <label className="ds-label">Stage label *</label>
+          <input value={form.label} onChange={(e) => set('label', e.target.value)} className="ds-input" />
         </div>
         <div>
-          <label className="text-xs text-slate-400 mb-1 block">Icon (emoji)</label>
-          <input value={form.icon} onChange={(e) => set('icon', e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-500/50"
-            placeholder="🏢" maxLength={4} />
+          <label className="ds-label">Icon (emoji)</label>
+          <input value={form.icon} onChange={(e) => set('icon', e.target.value)} className="ds-input" placeholder="🏢" maxLength={4} />
         </div>
-        <div className="sm:col-span-2">
-          <label className="text-xs text-slate-400 mb-1 block">Description</label>
-          <input value={form.description} onChange={(e) => set('description', e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-500/50" />
+        <div style={{ gridColumn: '1/-1' }}>
+          <label className="ds-label">Description</label>
+          <input value={form.description} onChange={(e) => set('description', e.target.value)} className="ds-input" />
         </div>
         <div>
-          <label className="text-xs text-slate-400 mb-1 block">Sort order</label>
-          <input type="number" value={form.sort_order} onChange={(e) => set('sort_order', e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-500/50" />
+          <label className="ds-label">Sort order</label>
+          <input type="number" value={form.sort_order} onChange={(e) => set('sort_order', e.target.value)} className="ds-input" />
         </div>
-        <div className="flex items-center gap-2 pt-5">
-          <input type="checkbox" checked={form.is_active} onChange={(e) => set('is_active', e.target.checked)} className="accent-blue-500" />
-          <label className="text-sm text-slate-300">Active</label>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 20 }}>
+          <input type="checkbox" checked={form.is_active} onChange={(e) => set('is_active', e.target.checked)} style={{ accentColor: 'var(--ds-teal)', width: 14, height: 14 }} />
+          <label style={{ fontSize: 13, color: 'var(--ds-ink)', cursor: 'pointer' }}>Active</label>
         </div>
       </div>
-      <div className="flex gap-2">
-        <button onClick={() => onSave(form)} disabled={isSaving || !form.label.trim()}
-          className="px-4 py-1.5 bg-yellow-600 hover:bg-yellow-500 disabled:opacity-40 text-white text-sm font-semibold rounded-lg transition-colors">
+      <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+        <button
+          onClick={() => onSave(form)}
+          disabled={isSaving || !form.label.trim()}
+          className="ds-btn ds-btn-xs"
+          style={{ background: 'var(--ds-amber)', color: 'var(--ds-ink)', border: 'none', fontWeight: 600, opacity: (isSaving || !form.label.trim()) ? 0.4 : 1 }}
+        >
           {isSaving ? 'Saving…' : 'Save Stage'}
         </button>
-        <button onClick={onCancel} className="px-4 py-1.5 border border-white/10 text-slate-400 hover:text-white text-sm rounded-lg transition-colors">Cancel</button>
+        <button onClick={onCancel} className="ds-btn ds-btn-ghost ds-btn-xs">Cancel</button>
       </div>
     </div>
   )
 }
 
 // ---------------------------------------------------------------------------
-// Add Stage form
+// AddStageForm
 // ---------------------------------------------------------------------------
 
 function AddStageForm({ onSave, onCancel, isSaving }) {
@@ -303,50 +283,47 @@ function AddStageForm({ onSave, onCancel, isSaving }) {
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }))
 
   return (
-    <div className="border border-green-500/20 rounded-xl p-4 bg-[#0b0e17] mb-4">
-      <div className="text-sm font-semibold text-green-400 mb-3">New Stage</div>
-      <div className="grid sm:grid-cols-3 gap-3">
+    <div className="ds-subform" style={{ borderColor: 'rgba(26,122,46,0.3)', marginBottom: 16 }}>
+      <div className="font-plex-mono" style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#1a7a2e', marginBottom: 12 }}>New Stage</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 80px', gap: 12 }}>
         <div>
-          <label className="text-xs text-slate-400 mb-1 block">Stage ID (slug) *</label>
-          <input value={form.id} onChange={(e) => set('id', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-green-500/50"
-            placeholder="my-stage" />
+          <label className="ds-label">Stage ID (slug) *</label>
+          <input value={form.id} onChange={(e) => set('id', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))} className="ds-input font-plex-mono" placeholder="my-stage" />
         </div>
         <div>
-          <label className="text-xs text-slate-400 mb-1 block">Label *</label>
-          <input value={form.label} onChange={(e) => set('label', e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-green-500/50" />
+          <label className="ds-label">Label *</label>
+          <input value={form.label} onChange={(e) => set('label', e.target.value)} className="ds-input" />
         </div>
         <div>
-          <label className="text-xs text-slate-400 mb-1 block">Icon</label>
-          <input value={form.icon} onChange={(e) => set('icon', e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-green-500/50"
-            placeholder="🏢" maxLength={4} />
+          <label className="ds-label">Icon</label>
+          <input value={form.icon} onChange={(e) => set('icon', e.target.value)} className="ds-input" placeholder="🏢" maxLength={4} />
         </div>
-        <div className="sm:col-span-2">
-          <label className="text-xs text-slate-400 mb-1 block">Description</label>
-          <input value={form.description} onChange={(e) => set('description', e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-green-500/50" />
+        <div style={{ gridColumn: '1/-1' }}>
+          <label className="ds-label">Description</label>
+          <input value={form.description} onChange={(e) => set('description', e.target.value)} className="ds-input" />
         </div>
         <div>
-          <label className="text-xs text-slate-400 mb-1 block">Sort order</label>
-          <input type="number" value={form.sort_order} onChange={(e) => set('sort_order', e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-green-500/50" />
+          <label className="ds-label">Sort order</label>
+          <input type="number" value={form.sort_order} onChange={(e) => set('sort_order', e.target.value)} className="ds-input" />
         </div>
       </div>
-      <div className="flex gap-2 mt-3">
-        <button onClick={() => onSave(form)} disabled={isSaving || !form.id || !form.label}
-          className="px-4 py-1.5 bg-green-600 hover:bg-green-500 disabled:opacity-40 text-white text-sm font-semibold rounded-lg transition-colors">
+      <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+        <button
+          onClick={() => onSave(form)}
+          disabled={isSaving || !form.id || !form.label}
+          className="ds-btn ds-btn-xs"
+          style={{ background: '#1a7a2e', color: '#fff', border: 'none', fontWeight: 600, opacity: (isSaving || !form.id || !form.label) ? 0.4 : 1 }}
+        >
           {isSaving ? 'Creating…' : 'Create Stage'}
         </button>
-        <button onClick={onCancel} className="px-4 py-1.5 border border-white/10 text-slate-400 hover:text-white text-sm rounded-lg">Cancel</button>
+        <button onClick={onCancel} className="ds-btn ds-btn-ghost ds-btn-xs">Cancel</button>
       </div>
     </div>
   )
 }
 
 // ---------------------------------------------------------------------------
-// Stage card with question list
+// StageCard
 // ---------------------------------------------------------------------------
 
 function StageCard({ stage, qc, industryChoices, industryQId }) {
@@ -393,35 +370,42 @@ function StageCard({ stage, qc, industryChoices, industryQId }) {
   }
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#0f172a] overflow-hidden mb-4">
+    <div className="ds-content-card" style={{ padding: 0, marginBottom: 12, overflow: 'hidden' }}>
       {/* Stage header */}
-      <div className="px-5 py-4">
-        <div className="flex items-center gap-3">
+      <div style={{ padding: '14px 20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button
             onClick={() => setExpanded((e) => !e)}
-            className="flex items-center gap-3 flex-1 text-left"
+            style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}
           >
-            <span className="text-xl">{stage.icon || '📋'}</span>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-white">{stage.label}</span>
-                <span className="text-xs bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-full px-2 py-0.5">
+            <span style={{ fontSize: 20 }}>{stage.icon || '📋'}</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--ds-ink)' }}>{stage.label}</span>
+                <span className="font-plex-mono" style={{ fontSize: 10, color: 'var(--ds-teal)', background: 'rgba(30,122,107,0.08)', border: '1px solid rgba(30,122,107,0.2)', borderRadius: 20, padding: '1px 8px' }}>
                   {activeQs.length} questions
                 </span>
                 {inactiveCount > 0 && (
-                  <span className="text-xs text-slate-600">{inactiveCount} hidden</span>
+                  <span style={{ fontSize: 11, color: 'var(--ds-ink-faint)' }}>{inactiveCount} hidden</span>
                 )}
                 {!stage.is_active && (
-                  <span className="text-xs bg-red-500/10 border border-red-500/20 text-red-400 rounded-full px-2 py-0.5">Inactive</span>
+                  <span className="font-plex-mono" style={{ fontSize: 10, color: '#c0392b', background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', borderRadius: 20, padding: '1px 8px' }}>Inactive</span>
                 )}
               </div>
-              {stage.description && <div className="text-xs text-slate-500 mt-0.5">{stage.description}</div>}
+              {stage.description && <div style={{ fontSize: 12, color: 'var(--ds-ink-soft)', marginTop: 2 }}>{stage.description}</div>}
             </div>
-            <span className="text-slate-500 text-sm">{expanded ? '▲' : '▼'}</span>
+            <span style={{ fontSize: 12, color: 'var(--ds-ink-faint)' }}>{expanded ? '▲' : '▼'}</span>
           </button>
           <button
             onClick={() => setEditingStage((e) => !e)}
-            className="text-xs text-slate-400 hover:text-yellow-400 border border-white/10 hover:border-yellow-500/30 rounded px-2 py-1 transition-colors ml-2"
+            className="ds-btn-xs"
+            style={{
+              fontSize: 11, color: 'var(--ds-ink-soft)',
+              border: '1px solid var(--ds-line)', borderRadius: 6, padding: '3px 10px',
+              background: 'none', cursor: 'pointer', fontFamily: 'inherit', transition: 'color 0.15s, border-color 0.15s',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--ds-amber)'; e.currentTarget.style.borderColor = 'var(--ds-amber)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--ds-ink-soft)'; e.currentTarget.style.borderColor = 'var(--ds-line)' }}
           >
             Edit Stage
           </button>
@@ -439,64 +423,68 @@ function StageCard({ stage, qc, industryChoices, industryQId }) {
 
       {/* Questions list */}
       {expanded && (
-        <div className="border-t border-white/5 px-5 pb-4">
+        <div style={{ borderTop: '1px solid var(--ds-line)', padding: '4px 20px 16px' }}>
           {activeQs.length === 0 && !addingQ && (
-            <div className="text-slate-600 text-sm py-4 text-center">No active questions in this stage.</div>
+            <div style={{ fontSize: 13, color: 'var(--ds-ink-faint)', padding: '16px 0', textAlign: 'center' }}>No active questions in this stage.</div>
           )}
 
           {activeQs.map((q, idx) => (
             <div key={q.id}>
-              {/* Question row */}
-              <div className={`flex items-start gap-3 py-3 ${idx > 0 ? 'border-t border-white/5' : 'border-t border-white/5 mt-1'}`}>
-                <span className="text-xs text-slate-600 w-5 pt-0.5 shrink-0">{idx + 1}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm text-white leading-snug">{q.prompt}</div>
-                  {q.subtext && <div className="text-xs text-slate-500 mt-0.5">{q.subtext}</div>}
-                  <div className="flex items-center gap-2 mt-1 flex-wrap">
-                    <span className="text-xs bg-white/5 border border-white/10 text-slate-400 rounded px-1.5 py-0.5">{TYPE_LABELS[q.question_type] || q.question_type}</span>
-                    {q.pain_key && <span className="text-xs text-orange-400/70">{q.pain_key}</span>}
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 0', borderTop: idx === 0 ? 'none' : '1px solid var(--ds-line-soft)' }}>
+                <span className="font-plex-mono" style={{ fontSize: 11, color: 'var(--ds-ink-faint)', width: 18, paddingTop: 2, flexShrink: 0 }}>{idx + 1}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, color: 'var(--ds-ink)', lineHeight: 1.45 }}>{q.prompt}</div>
+                  {q.subtext && <div style={{ fontSize: 12, color: 'var(--ds-ink-soft)', marginTop: 2 }}>{q.subtext}</div>}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
+                    <span className="font-plex-mono" style={{ fontSize: 10, background: 'var(--ds-paper)', border: '1px solid var(--ds-line)', color: 'var(--ds-ink-soft)', borderRadius: 4, padding: '2px 6px' }}>
+                      {TYPE_LABELS[q.question_type] || q.question_type}
+                    </span>
+                    {q.tags && <span style={{ fontSize: 11, color: 'var(--ds-amber)', fontWeight: 500 }}>{q.tags}</span>}
                   </div>
                   {q.type_config?.choices?.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mt-2">
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
                       {q.type_config.choices.map((c) => {
                         const scoreMap = q.type_config.score_map || {}
                         const hasScores = Object.keys(scoreMap).length > 0
                         const score = hasScores ? (scoreMap[c.value] ?? scoreMap[c.label] ?? null) : null
-                        const colorCls = score == null
-                          ? 'text-slate-500 border-white/10 bg-white/5'
+                        const style = score == null
+                          ? { color: 'var(--ds-ink-faint)', border: '1px solid var(--ds-line)', background: 'var(--ds-paper)' }
                           : score >= 80
-                          ? 'text-green-400 border-green-500/30 bg-green-500/10'
+                          ? { color: '#1a7a2e', border: '1px solid rgba(26,122,46,0.3)', background: 'rgba(26,122,46,0.07)' }
                           : score >= 50
-                          ? 'text-amber-400 border-amber-500/30 bg-amber-500/10'
-                          : 'text-red-400 border-red-500/30 bg-red-500/10'
+                          ? { color: '#a05c00', border: '1px solid rgba(160,92,0,0.3)', background: 'rgba(160,92,0,0.07)' }
+                          : { color: '#c0392b', border: '1px solid rgba(192,57,43,0.3)', background: 'rgba(192,57,43,0.07)' }
                         return (
-                          <span key={c.value} className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border ${colorCls}`}>
+                          <span key={c.value} className="font-plex-mono" style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, display: 'inline-flex', alignItems: 'center', gap: 4, ...style }}>
                             {c.label}
-                            {score != null && <span className="font-bold">{score}</span>}
+                            {score != null && <span style={{ fontWeight: 700 }}>{score}</span>}
                           </span>
                         )
                       })}
                     </div>
                   )}
                 </div>
-                <div className="flex gap-1 shrink-0">
+                <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                   <button
                     onClick={() => setEditingQId(editingQId === q.id ? null : q.id)}
-                    className="text-xs text-slate-400 hover:text-blue-400 border border-white/10 hover:border-blue-500/30 rounded px-2 py-1 transition-colors"
+                    style={{ fontSize: 11, color: 'var(--ds-ink-soft)', border: '1px solid var(--ds-line)', borderRadius: 6, padding: '3px 10px', background: 'none', cursor: 'pointer', fontFamily: 'inherit', transition: 'color 0.15s, border-color 0.15s' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--ds-teal)'; e.currentTarget.style.borderColor = 'var(--ds-teal)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--ds-ink-soft)'; e.currentTarget.style.borderColor = 'var(--ds-line)' }}
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => confirmDelete(q)}
                     disabled={deleteQ.isPending}
-                    className="text-xs text-slate-600 hover:text-red-400 border border-white/10 hover:border-red-500/30 rounded px-2 py-1 transition-colors"
+                    style={{ fontSize: 11, color: 'var(--ds-ink-faint)', border: '1px solid var(--ds-line)', borderRadius: 6, padding: '3px 10px', background: 'none', cursor: 'pointer', fontFamily: 'inherit', transition: 'color 0.15s, border-color 0.15s' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = '#c0392b'; e.currentTarget.style.borderColor = 'rgba(192,57,43,0.4)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--ds-ink-faint)'; e.currentTarget.style.borderColor = 'var(--ds-line)' }}
                   >
                     ✕
                   </button>
                 </div>
               </div>
 
-              {/* Inline edit form */}
               {editingQId === q.id && (
                 <QuestionForm
                   initial={q}
@@ -511,9 +499,8 @@ function StageCard({ stage, qc, industryChoices, industryQId }) {
             </div>
           ))}
 
-          {/* Add question */}
           {addingQ ? (
-            <div className="mt-3">
+            <div style={{ marginTop: 12 }}>
               <QuestionForm
                 initial={emptyQuestionForm(stage.id)}
                 stageId={stage.id}
@@ -527,7 +514,15 @@ function StageCard({ stage, qc, industryChoices, industryQId }) {
           ) : (
             <button
               onClick={() => setAddingQ(true)}
-              className="mt-3 w-full py-2 border border-dashed border-white/15 hover:border-blue-500/30 text-slate-500 hover:text-blue-400 rounded-xl text-sm transition-colors"
+              style={{
+                marginTop: 12, width: '100%', padding: '8px 0',
+                border: '1px dashed var(--ds-line)', borderRadius: 10,
+                fontSize: 13, color: 'var(--ds-ink-faint)',
+                background: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                transition: 'border-color 0.15s, color 0.15s',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--ds-teal)'; e.currentTarget.style.color = 'var(--ds-teal)' }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--ds-line)'; e.currentTarget.style.color = 'var(--ds-ink-faint)' }}
             >
               + Add Question
             </button>
@@ -539,7 +534,7 @@ function StageCard({ stage, qc, industryChoices, industryQId }) {
 }
 
 // ---------------------------------------------------------------------------
-// Import tab
+// ImportTab
 // ---------------------------------------------------------------------------
 
 function ImportTab({ qc }) {
@@ -587,72 +582,81 @@ function ImportTab({ qc }) {
       a.click()
       URL.revokeObjectURL(url)
     } catch {
-      // silently ignore — browser will show its own error if network fails
+      // silently ignore
     } finally {
       setDownloading(false)
     }
   }
 
   return (
-    <div className="max-w-xl">
-      <div className="flex items-start justify-between mb-1">
-        <h3 className="text-base font-semibold text-white">Import Survey Config</h3>
+    <div style={{ maxWidth: 560 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+        <h3 className="ds-section-heading font-newsreader" style={{ margin: 0 }}>Import Survey Config</h3>
         <button
           onClick={handleDownloadTemplate}
           disabled={downloading}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300 border border-blue-500/30 hover:border-blue-400/50 rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50"
+          className="ds-btn ds-btn-ghost ds-btn-xs"
+          style={{ opacity: downloading ? 0.5 : 1 }}
         >
           {downloading ? '…' : '↓'} Download Template
         </button>
       </div>
-      <p className="text-sm text-slate-400 mb-5">
-        Upload an <span className="text-white">.xlsx</span> or <span className="text-white">.json</span> file to add questions.
-        Existing questions (matched by prompt text) are skipped — import is additive only.
+      <p style={{ fontSize: 13, color: 'var(--ds-ink-soft)', marginBottom: 20, lineHeight: 1.65 }}>
+        Upload an <strong>.xlsx</strong> or <strong>.json</strong> file to add or update questions.
+        New questions are created; existing ones (matched by prompt text) are updated if any column has changed.
       </p>
 
-      {/* Expected columns info */}
-      <div className="rounded-xl bg-white/5 border border-white/10 p-4 mb-5">
-        <div className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">Expected Excel columns</div>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-          {['Stage', 'Question', 'Question_Type', 'Choices', 'Subtext', 'Pain_Key', 'Branch_On'].map((col) => (
-            <div key={col} className="font-mono text-blue-300">{col}</div>
+      <div style={{ borderRadius: 10, background: 'var(--ds-paper)', border: '1px solid var(--ds-line)', padding: 16, marginBottom: 20 }}>
+        <div className="font-plex-mono" style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ds-ink-faint)', marginBottom: 10 }}>Expected Excel columns</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px 16px' }}>
+          {['Stage', 'Question', 'Question_Type', 'Choices', 'Score_Map', 'Tags', 'Subtext', 'Show_For_Industry', 'Branch_On'].map((col) => (
+            <div key={col} className="font-plex-mono" style={{ fontSize: 12, color: 'var(--ds-teal)' }}>{col}</div>
           ))}
         </div>
-        <div className="text-xs text-slate-500 mt-3">
-          Stage values: <span className="font-mono text-slate-300">business · pain · rootcause · data · technology · compliance · readiness · output</span>
+        <div style={{ fontSize: 12, color: 'var(--ds-ink-faint)', marginTop: 12, lineHeight: 1.6 }}>
+          Stage values: <span className="font-plex-mono" style={{ color: 'var(--ds-ink-soft)' }}>business · pain · rootcause · data · technology · compliance · readiness · output</span>
         </div>
-        <div className="text-xs text-slate-500 mt-1">
-          Choices: pipe-separated — <span className="font-mono text-slate-300">Option A | Option B | Option C</span>
+        <div style={{ fontSize: 12, color: 'var(--ds-ink-faint)', marginTop: 4 }}>
+          Choices: pipe-separated — <span className="font-plex-mono" style={{ color: 'var(--ds-ink-soft)' }}>Option A | Option B | Option C</span>
+        </div>
+        <div style={{ fontSize: 12, color: 'var(--ds-ink-faint)', marginTop: 4 }}>
+          Score_Map: <span className="font-plex-mono" style={{ color: 'var(--ds-ink-soft)' }}>Option A:3 | Option B:2 | Option C:1</span> · Show_For_Industry: e.g. <span className="font-plex-mono" style={{ color: 'var(--ds-ink-soft)' }}>Healthcare</span>
         </div>
       </div>
 
-      {/* Upload area */}
       <div
-        className="border-2 border-dashed border-white/15 hover:border-blue-500/40 rounded-2xl p-10 text-center cursor-pointer transition-colors"
+        style={{
+          border: '2px dashed var(--ds-line)', borderRadius: 14,
+          padding: '40px 24px', textAlign: 'center', cursor: 'pointer',
+          transition: 'border-color 0.15s',
+        }}
         onClick={() => fileRef.current?.click()}
+        onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--ds-teal)'}
+        onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--ds-line)'}
       >
-        <div className="text-3xl mb-2">📂</div>
-        <div className="text-sm text-slate-300 font-medium">Click to choose a file</div>
-        <div className="text-xs text-slate-500 mt-1">Accepts .xlsx or .json</div>
-        <input ref={fileRef} type="file" accept=".xlsx,.xls,.json" className="hidden" onChange={handleFile} />
+        <div style={{ fontSize: 32, marginBottom: 8 }}>📂</div>
+        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--ds-ink)' }}>Click to choose a file</div>
+        <div style={{ fontSize: 12, color: 'var(--ds-ink-faint)', marginTop: 4 }}>Accepts .xlsx or .json</div>
+        <input ref={fileRef} type="file" accept=".xlsx,.xls,.json" style={{ display: 'none' }} onChange={handleFile} />
       </div>
 
       {importMutation.isPending && (
-        <div className="mt-4 text-sm text-blue-400 animate-pulse">Importing…</div>
+        <p className="font-plex-mono" style={{ marginTop: 16, fontSize: 13, color: 'var(--ds-teal)' }}>Importing…</p>
       )}
 
       {error && (
-        <div className="mt-4 rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-300">{error}</div>
+        <div style={{ marginTop: 16, borderRadius: 10, background: 'rgba(192,57,43,0.06)', border: '1px solid rgba(192,57,43,0.2)', padding: '12px 16px', fontSize: 13, color: '#c0392b' }}>{error}</div>
       )}
 
       {result && (
-        <div className="mt-4 rounded-xl bg-green-500/10 border border-green-500/20 px-4 py-4">
-          <div className="font-semibold text-green-400 mb-2">Import complete</div>
-          <div className="text-sm text-slate-300 space-y-1">
-            <div>Total processed: <span className="font-bold text-white">{result.total}</span></div>
-            <div>Created: <span className="font-bold text-green-300">{result.created}</span></div>
-            <div>Skipped (already exist): <span className="font-bold text-slate-400">{result.skipped}</span></div>
-            <div>Stages touched: <span className="font-mono text-slate-300">{result.stages?.join(', ')}</span></div>
+        <div style={{ marginTop: 16, borderRadius: 10, background: 'rgba(26,122,46,0.06)', border: '1px solid rgba(26,122,46,0.2)', padding: '14px 16px' }}>
+          <div style={{ fontWeight: 600, color: '#1a7a2e', marginBottom: 8 }}>Import complete</div>
+          <div style={{ fontSize: 13, color: 'var(--ds-ink-soft)', display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div>Total processed: <strong style={{ color: 'var(--ds-ink)' }}>{result.total}</strong></div>
+            <div>Created: <strong style={{ color: '#1a7a2e' }}>{result.created}</strong></div>
+            {result.updated > 0 && <div>Updated: <strong style={{ color: 'var(--ds-teal)' }}>{result.updated}</strong></div>}
+            <div>Skipped (no changes): <strong style={{ color: 'var(--ds-ink-faint)' }}>{result.skipped}</strong></div>
+            <div>Stages touched: <span className="font-plex-mono" style={{ color: 'var(--ds-ink-soft)' }}>{result.stages?.join(', ')}</span></div>
           </div>
         </div>
       )}
@@ -661,7 +665,7 @@ function ImportTab({ qc }) {
 }
 
 // ---------------------------------------------------------------------------
-// Main ConfigManager component
+// Main ConfigManager
 // ---------------------------------------------------------------------------
 
 export default function ConfigManager() {
@@ -682,7 +686,6 @@ export default function ConfigManager() {
   const stages = data?.stages || []
   const scoring = data?.scoring || []
 
-  // Extract industry choices from Q1.1 (or legacy b_industry) for the QuestionForm dropdown
   const { industryChoices, industryQId } = (() => {
     for (const stage of stages) {
       const q = (stage.questions || []).find((q) => q.id === 'Q1.1' || q.id === 'b_industry')
@@ -692,18 +695,14 @@ export default function ConfigManager() {
   })()
 
   return (
-    <div>
-      {/* Tab bar */}
-      <div className="flex gap-1 mb-6 border-b border-white/10 pb-0">
+    <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", color: 'var(--ds-ink)' }}>
+      {/* Sub-tab bar */}
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--ds-line)', marginBottom: 24 }}>
         {[['stages', 'Survey Stages'], ['scoring', 'Scoring'], ['import', 'Import']].map(([key, label]) => (
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
-              tab === key
-                ? 'border-blue-500 text-white'
-                : 'border-transparent text-slate-400 hover:text-white'
-            }`}
+            className={`ds-tab${tab === key ? ' is-active' : ''}`}
           >
             {label}
           </button>
@@ -713,11 +712,12 @@ export default function ConfigManager() {
       {/* Survey Stages tab */}
       {tab === 'stages' && (
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <div className="text-sm text-slate-400">{stages.length} stages</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <span style={{ fontSize: 13, color: 'var(--ds-ink-faint)' }}>{stages.length} stages</span>
             <button
               onClick={() => setAddingStage((s) => !s)}
-              className="text-xs font-semibold text-green-400 hover:text-green-300 border border-green-500/30 hover:border-green-400/50 rounded-lg px-3 py-1.5 transition-colors"
+              className="ds-btn ds-btn-ghost ds-btn-xs"
+              style={{ color: '#1a7a2e', borderColor: 'rgba(26,122,46,0.3)' }}
             >
               + Add Stage
             </button>
@@ -731,8 +731,8 @@ export default function ConfigManager() {
             />
           )}
 
-          {isLoading && <div className="text-slate-400 text-sm animate-pulse">Loading config…</div>}
-          {isError && <div className="text-red-400 text-sm">Failed to load config.</div>}
+          {isLoading && <p className="font-plex-mono" style={{ color: 'var(--ds-ink-faint)', fontSize: 13 }}>Loading config…</p>}
+          {isError && <p style={{ color: '#c0392b', fontSize: 13 }}>Failed to load config.</p>}
 
           {stages.map((stage) => (
             <StageCard key={stage.id} stage={stage} qc={qc} industryChoices={industryChoices} industryQId={industryQId} />
@@ -743,45 +743,39 @@ export default function ConfigManager() {
       {/* Scoring tab */}
       {tab === 'scoring' && (
         <div>
-          {isLoading && <div className="text-slate-400 text-sm animate-pulse">Loading scoring…</div>}
-          {isError && <div className="text-red-400 text-sm">Failed to load scoring.</div>}
+          {isLoading && <p className="font-plex-mono" style={{ color: 'var(--ds-ink-faint)', fontSize: 13 }}>Loading scoring…</p>}
+          {isError && <p style={{ color: '#c0392b', fontSize: 13 }}>Failed to load scoring.</p>}
           {!isLoading && scoring.length === 0 && (
-            <div className="text-slate-500 text-sm">No scoring dimensions configured.</div>
+            <p style={{ color: 'var(--ds-ink-faint)', fontSize: 13 }}>No scoring dimensions configured.</p>
           )}
-          <div className="space-y-6">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {scoring.map((dim) => (
-              <div key={dim.id} className="rounded-2xl border border-white/10 bg-[#0f172a] overflow-hidden">
-                <div className="px-5 py-4 flex items-center gap-3 border-b border-white/5">
-                  <div
-                    className="w-3 h-3 rounded-full shrink-0"
-                    style={{ backgroundColor: dim.color || '#6366f1' }}
-                  />
-                  <div>
-                    <span className="font-semibold text-white">{dim.label}</span>
-                    <span className="ml-2 text-xs text-slate-500">weight {dim.weight}</span>
+              <div key={dim.id} className="ds-content-card" style={{ padding: 0, overflow: 'hidden' }}>
+                <div style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--ds-line)' }}>
+                  <div style={{ width: 12, height: 12, borderRadius: '50%', flexShrink: 0, backgroundColor: dim.color || 'var(--ds-teal)' }} />
+                  <div style={{ flex: 1 }}>
+                    <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--ds-ink)' }}>{dim.label}</span>
+                    <span style={{ marginLeft: 8, fontSize: 12, color: 'var(--ds-ink-faint)' }}>weight {dim.weight}</span>
                   </div>
-                  <span className="ml-auto text-xs bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-full px-2 py-0.5">
+                  <span className="font-plex-mono" style={{ fontSize: 10, color: 'var(--ds-teal)', background: 'rgba(30,122,107,0.08)', border: '1px solid rgba(30,122,107,0.2)', borderRadius: 20, padding: '2px 8px' }}>
                     {dim.questions.length} questions
                   </span>
                 </div>
-                <div className="px-5 divide-y divide-white/5">
+                <div style={{ padding: '4px 20px' }}>
                   {dim.questions.map((sq, idx) => (
-                    <div key={sq.id} className="py-3">
-                      <div className="flex items-start gap-3">
-                        <span className="text-xs text-slate-600 w-5 pt-0.5 shrink-0">{idx + 1}</span>
-                        <div className="flex-1">
-                          <div className="text-xs font-mono text-slate-500 mb-0.5">{sq.id}</div>
-                          <div className="text-sm text-white leading-snug">{sq.question_text}</div>
+                    <div key={sq.id} style={{ padding: '12px 0', borderBottom: idx < dim.questions.length - 1 ? '1px solid var(--ds-line-soft)' : 'none' }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                        <span className="font-plex-mono" style={{ fontSize: 11, color: 'var(--ds-ink-faint)', width: 18, paddingTop: 1, flexShrink: 0 }}>{idx + 1}</span>
+                        <div style={{ flex: 1 }}>
+                          <div className="font-plex-mono" style={{ fontSize: 10, color: 'var(--ds-ink-faint)', marginBottom: 3 }}>{sq.id}</div>
+                          <div style={{ fontSize: 13, color: 'var(--ds-ink)', lineHeight: 1.45 }}>{sq.question_text}</div>
                           {sq.label && sq.label !== sq.question_text && (
-                            <div className="text-xs text-slate-500 mt-0.5">{sq.label}</div>
+                            <div style={{ fontSize: 12, color: 'var(--ds-ink-soft)', marginTop: 2 }}>{sq.label}</div>
                           )}
                           {sq.options?.length > 0 && (
-                            <div className="flex flex-wrap gap-1.5 mt-2">
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
                               {sq.options.map((opt, i) => (
-                                <span
-                                  key={i}
-                                  className="text-xs px-2 py-0.5 rounded-full border border-white/10 bg-white/5 text-slate-400"
-                                >
+                                <span key={i} className="font-plex-mono" style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, border: '1px solid var(--ds-line)', background: 'var(--ds-paper)', color: 'var(--ds-ink-soft)' }}>
                                   {i}pt: {opt}
                                 </span>
                               ))}
@@ -798,7 +792,6 @@ export default function ConfigManager() {
         </div>
       )}
 
-      {/* Import tab */}
       {tab === 'import' && <ImportTab qc={qc} />}
     </div>
   )

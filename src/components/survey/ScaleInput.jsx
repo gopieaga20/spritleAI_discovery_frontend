@@ -1,6 +1,6 @@
 export default function ScaleInput({ scale, value, onChange }) {
   return (
-    <div className="flex flex-wrap gap-3">
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
       {scale.map((point) => {
         const v = point.value ?? point
         const label = point.label ?? String(v)
@@ -8,16 +8,27 @@ export default function ScaleInput({ scale, value, onChange }) {
         return (
           <button
             key={v}
+            className="ds-scale-btn"
             onClick={() => onChange(v)}
-            className={[
-              'flex flex-col items-center rounded-xl border px-5 py-3 min-w-[72px] transition-all text-sm font-semibold',
-              selected
-                ? 'border-blue-500 bg-blue-500/10 text-white'
-                : 'border-white/10 bg-white/5 text-slate-400 hover:border-white/30 hover:text-white',
-            ].join(' ')}
+            aria-pressed={selected}
           >
-            <span className="text-lg font-bold">{v}</span>
-            <span className="text-xs text-slate-500 mt-1 text-center leading-tight">{label}</span>
+            <span
+              className="font-plex-mono"
+              style={{
+                fontSize: 18, fontWeight: 700,
+                color: selected ? 'var(--ds-teal-dark)' : 'var(--ds-ink)',
+              }}
+            >
+              {v}
+            </span>
+            <span
+              style={{
+                fontSize: 11, color: 'var(--ds-ink-soft)',
+                marginTop: 4, textAlign: 'center', lineHeight: 1.3,
+              }}
+            >
+              {label}
+            </span>
           </button>
         )
       })}

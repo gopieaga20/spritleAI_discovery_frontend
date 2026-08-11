@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import SpritleLogo from '../components/SpritleLogo.jsx'
 import { useLogout } from '../hooks/useAuth.js'
 import SessionTable from '../components/admin/SessionTable.jsx'
 import SessionDetail from '../components/admin/SessionDetail.jsx'
@@ -13,34 +14,79 @@ export default function AdminConsole() {
   const logout = useLogout()
 
   return (
-    <div className="min-h-screen bg-[#0b0e17] flex flex-col">
+    <div
+      style={{
+        minHeight: '100vh',
+        background: 'var(--ds-paper)',
+        display: 'flex',
+        flexDirection: 'column',
+        fontFamily: "'IBM Plex Sans', sans-serif",
+        color: 'var(--ds-ink)',
+      }}
+    >
       {/* Header */}
-      <header className="flex items-center gap-3 px-6 py-4 border-b border-white/10 bg-[#0f172a]">
-        <span className="text-2xl">⚡</span>
-        <span className="font-bold text-white text-base">Spritle AI Discovery</span>
-        <span className="ml-1 text-xs text-slate-500 bg-white/5 border border-white/10 rounded-full px-2 py-0.5">
-          Admin
-        </span>
+      <header
+        style={{
+          background: 'var(--ds-ink)',
+          color: '#fff',
+          padding: '14px 28px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 14,
+          flexShrink: 0,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0 }}>
+          <SpritleLogo height={22} variant="color" />
+          <span
+            className="font-plex-mono"
+            style={{ fontSize: 10, letterSpacing: '0.14em', color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: 14 }}
+          >
+            AI Readiness Discovery
+          </span>
+          <span
+            className="font-plex-mono"
+            style={{
+              fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase',
+              color: 'rgba(255,255,255,0.45)',
+              border: '1px solid rgba(255,255,255,0.18)',
+              borderRadius: 12, padding: '2px 8px',
+            }}
+          >
+            Admin
+          </span>
+        </div>
+
         <button
           onClick={() => logout.mutate()}
-          className="ml-auto text-xs text-slate-400 hover:text-white border border-white/15 rounded-lg px-3 py-1.5 transition-colors"
+          style={{
+            marginLeft: 'auto',
+            fontSize: 12, fontWeight: 500,
+            color: 'rgba(255,255,255,0.55)',
+            border: '1px solid rgba(255,255,255,0.18)',
+            borderRadius: 7, padding: '6px 14px',
+            background: 'transparent', cursor: 'pointer',
+            fontFamily: 'inherit', transition: 'color 0.15s ease',
+          }}
         >
           Sign out
         </button>
       </header>
 
       {/* Tab bar */}
-      <nav className="flex border-b border-white/10 bg-[#0b0e17] px-6">
+      <nav
+        style={{
+          display: 'flex',
+          borderBottom: '1px solid var(--ds-line)',
+          background: 'var(--ds-card)',
+          padding: '0 28px',
+        }}
+      >
         {TABS.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={[
-              'px-4 py-3 text-sm font-semibold border-b-2 transition-colors mr-2',
-              activeTab === tab
-                ? 'border-blue-500 text-white'
-                : 'border-transparent text-slate-500 hover:text-slate-300',
-            ].join(' ')}
+            className={`ds-tab${activeTab === tab ? ' is-active' : ''}`}
           >
             {tab}
           </button>
@@ -48,10 +94,8 @@ export default function AdminConsole() {
       </nav>
 
       {/* Content */}
-      <main className="flex-1 p-6 max-w-6xl mx-auto w-full">
-        {activeTab === 'Sessions' && (
-          <SessionTable onSelect={(s) => setSelectedSession(s)} />
-        )}
+      <main style={{ flex: 1, padding: 28, maxWidth: 1100, margin: '0 auto', width: '100%' }}>
+        {activeTab === 'Sessions' && <SessionTable onSelect={(s) => setSelectedSession(s)} />}
         {activeTab === 'Leads' && <LeadList />}
         {activeTab === 'Config' && <ConfigManager />}
       </main>

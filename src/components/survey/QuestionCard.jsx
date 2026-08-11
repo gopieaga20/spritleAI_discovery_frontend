@@ -1,9 +1,11 @@
+import { useState } from 'react'
 import OptionPicker from './OptionPicker.jsx'
 import MultiSelect from './MultiSelect.jsx'
 import ScaleInput from './ScaleInput.jsx'
 import OpenText from './OpenText.jsx'
 
 export default function QuestionCard({ question, value, onChange, onNote, note }) {
+  const [noteOpen, setNoteOpen] = useState(false)
   if (!question) return null
 
   const renderInput = () => {
@@ -48,7 +50,15 @@ export default function QuestionCard({ question, value, onChange, onNote, note }
             value={value ?? ''}
             onChange={(e) => onChange(Number(e.target.value))}
             placeholder={`Enter ${question.type_config?.unit || 'value'}`}
-            className="w-full max-w-xs rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white text-lg focus:outline-none focus:border-blue-500"
+            style={{
+              width: '100%', maxWidth: 280,
+              borderRadius: 8, border: '1px solid var(--ds-line)',
+              padding: '12px 16px', fontSize: 16,
+              color: 'var(--ds-ink)', background: '#fff',
+              fontFamily: 'inherit', outline: 'none',
+            }}
+            onFocus={(e) => (e.target.style.borderColor = 'var(--ds-teal)')}
+            onBlur={(e) => (e.target.style.borderColor = 'var(--ds-line)')}
           />
         )
       case 'open-text':
@@ -58,26 +68,54 @@ export default function QuestionCard({ question, value, onChange, onNote, note }
   }
 
   return (
-    <div className="rounded-2xl border border-white/15 bg-[#0f172a] p-7 shadow-2xl mb-8">
-      <span className="block text-2xl font-extrabold text-white leading-snug mb-2">
-        {question.prompt}
-      </span>
-      {question.subtext && (
-        <span className="block text-sm text-slate-400 mb-5 leading-relaxed">
-          {question.subtext}
-        </span>
-      )}
+    <div
+      style={{
+        background: 'var(--ds-card)',
+        border: '1px solid var(--ds-line)',
+        borderRadius: 10,
+        padding: 24,
+      }}
+    >
       {renderInput()}
-      {/* Optional note field */}
-      <div className="mt-5">
-        <label className="block text-xs text-slate-500 mb-1">Add a note (optional)</label>
-        <textarea
-          value={note || ''}
-          onChange={(e) => onNote && onNote(e.target.value)}
-          rows={2}
-          placeholder="Any additional context..."
-          className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-slate-300 resize-none focus:outline-none focus:border-blue-500/50"
-        />
+
+      {/* Collapsible note field */}
+      <div style={{ marginTop: 17 }}>
+        {!noteOpen && !note ? (
+          <button
+            onClick={() => setNoteOpen(true)}
+            style={{
+              fontSize: 14, color: 'var(--ds-ink-faint)',
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontFamily: 'inherit', padding: 0,
+              textDecoration: 'underline', textUnderlineOffset: 3,
+              transition: 'color 0.15s',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--ds-ink-soft)'}
+            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--ds-ink-faint)'}
+          >
+            + Add a note
+          </button>
+        ) : (
+          <>
+            <label
+              className="font-plex-mono"
+              style={{
+                fontSize: 13, letterSpacing: '0.08em', textTransform: 'uppercase',
+                color: 'var(--ds-ink-soft)', display: 'block', marginBottom: 7,
+              }}
+            >
+              Add a note (optional)
+            </label>
+            <textarea
+              className="ds-textarea"
+              value={note || ''}
+              onChange={(e) => onNote && onNote(e.target.value)}
+              rows={2}
+              placeholder="Any additional context…"
+              autoFocus={noteOpen && !note}
+            />
+          </>
+        )}
       </div>
     </div>
   )
