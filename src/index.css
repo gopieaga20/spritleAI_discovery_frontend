@@ -1,11 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 :root {
+  /* Legacy tokens used by admin pages */
   --navy: #080a0f;
   --navy2: #0e121e;
   --navy3: #141927;
   --orange: #3b82f6;
-  --teal: #22c55e;
   --rose: #ef4444;
   --slate: #94a3b8;
   --bg: #080a0f;
@@ -14,16 +15,28 @@
   --text: #f8fafc;
   --text2: #cbd5e1;
   --radius: 12px;
+
+  /* Survey design tokens */
+  --ds-paper: #EDF1F0;
+  --ds-card: #FFFFFF;
+  --ds-ink: #16232B;
+  --ds-ink-soft: #55666D;
+  --ds-ink-faint: #93A3A8;
+  --ds-line: #CBD8D6;
+  --ds-line-soft: #DEE7E6;
+  --ds-teal: #1E7A6B;
+  --ds-teal-dark: #175E53;
+  --ds-teal-soft: #E1F1EC;
+  --ds-amber: #DB9130;
+  --ds-amber-soft: #F7E9D2;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: 'IBM Plex Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
   min-height: 100vh;
   margin: 0;
 }
@@ -32,4 +45,368 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* Typography helpers */
+.font-newsreader { font-family: 'Newsreader', serif; }
+.font-plex-mono  { font-family: 'IBM Plex Mono', monospace; }
+
+/* ── Survey animations ─────────────────────────────────────── */
+
+@keyframes ds-ring {
+  0%   { transform: scale(0.85); opacity: 0.8; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
+
+@keyframes ds-breathe {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(130, 195, 65, 0.3); }
+  50%       { box-shadow: 0 0 0 8px rgba(130, 195, 65, 0.12); }
+}
+
+.ds-node-ring::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid rgba(219, 145, 48, 0.5);
+  animation: ds-ring 1.8s ease-out infinite;
+  pointer-events: none;
+}
+
+.ds-pulse-dot {
+  animation: ds-breathe 1.8s ease-in-out infinite;
+}
+
+/* ── Survey sidebar nav button ─────────────────────────────── */
+
+.ds-nav-btn {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 4px;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: inherit;
+  color: inherit;
+  text-align: left;
+  transition: background 0.15s ease;
+}
+.ds-nav-btn:hover  { background: rgba(255, 255, 255, 0.06); }
+.ds-nav-btn:focus-visible { outline: 2px solid var(--ds-amber); outline-offset: 2px; }
+
+/* ── Survey option buttons ─────────────────────────────────── */
+
+.ds-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--ds-line);
+  border-radius: 8px;
+  padding: 14px 16px;
+  background: var(--ds-paper);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--ds-ink);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
+}
+.ds-option:hover:not([aria-pressed="true"]) { border-color: var(--ds-teal); }
+.ds-option:focus-visible { outline: 2px solid var(--ds-teal); outline-offset: 2px; }
+.ds-option[aria-pressed="true"] {
+  background: var(--ds-teal-soft);
+  border-color: var(--ds-teal);
+  box-shadow: inset 0 0 0 1px var(--ds-teal);
+}
+
+.ds-checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--ds-ink-faint);
+  background: #fff;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+.ds-option[aria-pressed="true"] .ds-checkbox {
+  background: var(--ds-teal);
+  border-color: var(--ds-teal);
+}
+
+
+.ds-radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--ds-ink-faint);
+  background: #fff;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+.ds-option[aria-pressed="true"] .ds-radio {
+  background: var(--ds-teal);
+  border-color: var(--ds-teal);
+}
+
+/* ── Scale option buttons ──────────────────────────────────── */
+
+.ds-scale-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid var(--ds-line);
+  border-radius: 8px;
+  padding: 12px 16px;
+  min-width: 72px;
+  background: var(--ds-paper);
+  cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+.ds-scale-btn:hover:not([aria-pressed="true"]) { border-color: var(--ds-teal); }
+.ds-scale-btn[aria-pressed="true"] {
+  background: var(--ds-teal-soft);
+  border-color: var(--ds-teal);
+  box-shadow: inset 0 0 0 1px var(--ds-teal);
+}
+
+/* ── Footer action buttons ─────────────────────────────────── */
+
+.ds-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 11px 20px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.ds-btn:focus-visible { outline: 2px solid var(--ds-teal); outline-offset: 2px; }
+
+.ds-btn-ghost {
+  border: 1px solid var(--ds-line);
+  color: var(--ds-ink-soft);
+  background: transparent;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.ds-btn-ghost:hover:not(:disabled) { border-color: var(--ds-ink-soft); color: var(--ds-ink); }
+.ds-btn-ghost:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.ds-btn-solid {
+  background: var(--ds-teal);
+  color: #fff;
+  border: none;
+  transition: background 0.15s ease;
+}
+.ds-btn-solid:hover:not(:disabled) { background: var(--ds-teal-dark); }
+.ds-btn-solid:disabled { background: var(--ds-line); color: var(--ds-ink-faint); cursor: not-allowed; }
+
+/* ── Textareas ─────────────────────────────────────────────── */
+
+.ds-textarea {
+  width: 100%;
+  resize: vertical;
+  border: 1px solid var(--ds-line);
+  border-radius: 8px;
+  padding: 12px 14px;
+  line-height: 26px;
+  color: var(--ds-ink);
+  background-color: #fff;
+  background-image: repeating-linear-gradient(
+    to bottom, transparent, transparent 25px, var(--ds-line-soft) 26px
+  );
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13.5px;
+}
+.ds-textarea::placeholder { color: var(--ds-ink-faint); }
+.ds-textarea:focus { outline: none; border-color: var(--ds-teal); }
+
+/* ── Form elements (admin + modals) ───────────────────────── */
+
+.ds-input {
+  width: 100%;
+  border: 1px solid var(--ds-line);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--ds-ink);
+  background: #fff;
+  font-family: 'IBM Plex Sans', sans-serif;
+  transition: border-color 0.15s ease;
+}
+.ds-input::placeholder { color: var(--ds-ink-faint); }
+.ds-input:focus { outline: none; border-color: var(--ds-teal); }
+.ds-input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.ds-select {
+  width: 100%;
+  border: 1px solid var(--ds-line);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--ds-ink);
+  background: #fff;
+  font-family: 'IBM Plex Sans', sans-serif;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+  appearance: auto;
+}
+.ds-select:focus { outline: none; border-color: var(--ds-teal); }
+
+.ds-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ds-ink-soft);
+  margin-bottom: 6px;
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Content card wrapper */
+.ds-content-card {
+  background: var(--ds-card);
+  border: 1px solid var(--ds-line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* Admin tab bar */
+.ds-tab {
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-bottom: 2px solid transparent;
+  color: var(--ds-ink-faint);
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+  font-family: 'IBM Plex Sans', sans-serif;
+  margin-bottom: -1px;
+}
+.ds-tab:hover { color: var(--ds-ink-soft); }
+.ds-tab.is-active {
+  color: var(--ds-teal);
+  border-bottom-color: var(--ds-teal);
+}
+
+/* Tables */
+.ds-table {
+  min-width: 100%;
+  font-size: 14px;
+  border-collapse: collapse;
+}
+.ds-table th {
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ds-ink-soft);
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--ds-paper);
+  border-bottom: 1px solid var(--ds-line);
+}
+.ds-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--ds-line-soft);
+  color: var(--ds-ink);
+}
+.ds-table tbody tr:last-child td { border-bottom: none; }
+.ds-table tbody tr:hover { background: var(--ds-teal-soft); cursor: pointer; }
+
+/* Inline sub-form panels */
+.ds-subform {
+  background: var(--ds-paper);
+  border: 1px solid var(--ds-line);
+  border-radius: 10px;
+  padding: 16px;
+  margin-top: 10px;
+}
+.ds-subform-teal { border-color: var(--ds-teal); }
+
+/* Small action button */
+.ds-btn-xs {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif;
+  border: 1px solid var(--ds-line);
+  color: var(--ds-ink-soft);
+  background: transparent;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.ds-btn-xs:hover { border-color: var(--ds-ink-soft); color: var(--ds-ink); }
+.ds-btn-xs.danger:hover { border-color: #e55; color: #c33; }
+.ds-btn-xs.teal:hover { border-color: var(--ds-teal); color: var(--ds-teal); }
+.ds-btn-xs:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Section heading in report */
+.ds-section-heading {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--ds-ink);
+  margin: 0 0 20px;
+  font-family: 'Newsreader', serif;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--ds-line);
+}
+
+/* Progress bar track */
+.ds-bar-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--ds-line);
+  overflow: hidden;
+}
+.ds-bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.7s ease;
+}
+
+/* ── Hide scrollbar tracks (keep scrollability) ────────────── */
+
+.ds-sidebar { scrollbar-width: none; -ms-overflow-style: none; }
+.ds-sidebar::-webkit-scrollbar { display: none; }
+.ds-main { scrollbar-width: none; -ms-overflow-style: none; }
+.ds-main::-webkit-scrollbar { display: none; }
+
+/* ── Responsive ────────────────────────────────────────────── */
+
+@media (max-width: 860px) {
+  .ds-sidebar { width: 100% !important; padding: 14px 16px !important; }
+  .ds-sidebar-label { display: none !important; }
+  .ds-navlist { display: flex !important; overflow-x: auto; gap: 4px; }
+  .ds-navitem { flex-shrink: 0; }
+  .ds-navline { display: none !important; }
+  .ds-navtext { display: none !important; }
+  .ds-sidebar-foot { display: none !important; }
+  .ds-main { padding: 28px 20px 32px !important; }
+  .ds-question-heading { font-size: 26px !important; max-width: none !important; }
+  .ds-options-grid { grid-template-columns: 1fr !important; }
+  .ds-body { flex-direction: column !important; }
 }

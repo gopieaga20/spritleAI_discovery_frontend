@@ -1,30 +1,25 @@
 export default function OptionPicker({ choices, value, onChange, layout = 'grid', scoreMap = {} }) {
-  const gridClass = layout === 'row'
-    ? 'grid grid-cols-2 gap-3'
-    : 'grid grid-cols-2 sm:grid-cols-3 gap-3'
-
-  const isOddCount = choices.length % 2 !== 0
-
   return (
-    <div className={gridClass}>
+    <div
+      className="ds-options-grid"
+      style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}
+    >
       {choices.map((choice, i) => {
         const selected = value === choice.value
-        const isLastOdd = layout === 'row' && isOddCount && i === choices.length - 1
+        const isLastOdd = choices.length % 2 !== 0 && i === choices.length - 1
         return (
           <button
             key={choice.value}
+            className="ds-option"
             onClick={() => onChange(choice.value)}
-            className={[
-              'flex flex-col items-start gap-1 rounded-xl border px-4 py-3 text-left transition-all text-sm font-medium',
-              selected
-                ? 'border-blue-500 bg-blue-500/10 text-white'
-                : 'border-white/10 bg-white/5 text-slate-300 hover:border-white/30 hover:text-white',
-              isLastOdd ? 'col-span-2 max-w-[calc(50%-6px)] mx-auto w-full' : '',
-            ].join(' ')}
+            aria-pressed={selected}
+            style={isLastOdd ? { gridColumn: '1 / -1', maxWidth: 'calc(50% - 6px)' } : {}}
           >
-            {choice.icon && <span className="text-xl">{choice.icon}</span>}
+            <span className="ds-radio">
+              {selected && <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#fff', flexShrink: 0 }} />}
+            </span>
+            {choice.icon && <span style={{ fontSize: '1.1em', flexShrink: 0 }}>{choice.icon}</span>}
             <span>{choice.label}</span>
-            {choice.sub && <span className="text-xs text-slate-500">{choice.sub}</span>}
           </button>
         )
       })}

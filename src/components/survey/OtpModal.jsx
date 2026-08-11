@@ -16,7 +16,7 @@ const COUNTRY_CODES = [
 ]
 
 export default function OtpModal({ onVerified }) {
-  const [step, setStep] = useState('email') // 'email' | 'otp'
+  const [step, setStep] = useState('email')
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
   const [company, setCompany] = useState('')
@@ -28,10 +28,7 @@ export default function OtpModal({ onVerified }) {
 
   const requestMutation = useMutation({
     mutationFn: (data) => apiClient.post('/otp/request/', data),
-    onSuccess: () => {
-      setStep('otp')
-      setError('')
-    },
+    onSuccess: () => { setStep('otp'); setError('') },
     onError: (err) => {
       setError(err.response?.data?.detail || 'Failed to send OTP. Please try again.')
     },
@@ -73,74 +70,84 @@ export default function OtpModal({ onVerified }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="w-full max-w-md rounded-2xl border border-white/15 bg-[#0f172a] p-8 shadow-2xl">
+    <div
+      style={{
+        position: 'fixed', inset: 0,
+        background: 'rgba(22,35,43,0.6)',
+        backdropFilter: 'blur(6px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        zIndex: 50, padding: 16,
+      }}
+    >
+      <div
+        style={{
+          width: '100%', maxWidth: 440,
+          background: 'var(--ds-card)',
+          border: '1px solid var(--ds-line)',
+          borderRadius: 14,
+          padding: 32,
+          fontFamily: "'IBM Plex Sans', sans-serif",
+          color: 'var(--ds-ink)',
+        }}
+      >
         {step === 'email' ? (
           <>
-            <h2 className="text-2xl font-bold text-white mb-2">Almost there!</h2>
-            <p className="text-slate-400 text-sm mb-6">
+            <h2
+              className="font-newsreader"
+              style={{ fontSize: 26, fontWeight: 500, margin: '0 0 8px' }}
+            >
+              Almost there!
+            </h2>
+            <p style={{ fontSize: 14, color: 'var(--ds-ink-soft)', margin: '0 0 24px', lineHeight: 1.6 }}>
               Enter your details to receive your AI readiness report. We'll send a one-time code to your email.
             </p>
-            <form onSubmit={handleRequestOtp} className="space-y-4">
+
+            <form onSubmit={handleRequestOtp} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Full Name</label>
-                <input
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Jane Smith"
-                  className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500"
-                />
+                <label className="ds-label">Full Name</label>
+                <input type="text" required value={name} onChange={(e) => setName(e.target.value)}
+                  placeholder="Jane Smith" className="ds-input" />
               </div>
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Work Email</label>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="jane@company.com"
-                  className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500"
-                />
+                <label className="ds-label">Work Email</label>
+                <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+                  placeholder="jane@company.com" className="ds-input" />
               </div>
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Company Name</label>
-                <input
-                  type="text"
-                  required
-                  value={company}
-                  onChange={(e) => setCompany(e.target.value)}
-                  placeholder="Acme Corp"
-                  className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500"
-                />
+                <label className="ds-label">Company Name</label>
+                <input type="text" required value={company} onChange={(e) => setCompany(e.target.value)}
+                  placeholder="Acme Corp" className="ds-input" />
               </div>
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Mobile Number <span className="text-slate-600">(optional)</span></label>
-                <div className="flex gap-2">
+                <label className="ds-label">
+                  Mobile Number{' '}
+                  <span style={{ color: 'var(--ds-ink-faint)', textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
+                </label>
+                <div style={{ display: 'flex', gap: 8 }}>
                   <select
                     value={countryCode}
                     onChange={(e) => setCountryCode(e.target.value)}
-                    className="rounded-lg bg-white/5 border border-white/10 px-2 py-3 text-white text-sm focus:outline-none focus:border-blue-500 w-28 shrink-0"
+                    className="ds-select"
+                    style={{ width: 110, flexShrink: 0 }}
                   >
                     {COUNTRY_CODES.map((c) => (
-                      <option key={c.code} value={c.code} className="bg-[#0f172a]">{c.label}</option>
+                      <option key={c.code} value={c.code}>{c.label}</option>
                     ))}
                   </select>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="98765 43210"
-                    className="flex-1 rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500"
-                  />
+                  <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
+                    placeholder="98765 43210" className="ds-input" style={{ flex: 1 }} />
                 </div>
               </div>
-              {error && <p className="text-red-400 text-xs">{error}</p>}
+
+              {error && (
+                <p style={{ fontSize: 13, color: '#c0392b', margin: 0 }}>{error}</p>
+              )}
+
               <button
                 type="submit"
                 disabled={requestMutation.isPending}
-                className="w-full rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-semibold py-3 text-sm transition-colors"
+                className="ds-btn ds-btn-solid"
+                style={{ justifyContent: 'center', marginTop: 4 }}
               >
                 {requestMutation.isPending ? 'Sending…' : 'Send verification code'}
               </button>
@@ -148,13 +155,21 @@ export default function OtpModal({ onVerified }) {
           </>
         ) : (
           <>
-            <h2 className="text-2xl font-bold text-white mb-2">Check your inbox</h2>
-            <p className="text-slate-400 text-sm mb-6">
-              We sent a 6-digit code to <span className="text-blue-400">{email}</span>. Enter it below to view your results.
+            <h2
+              className="font-newsreader"
+              style={{ fontSize: 26, fontWeight: 500, margin: '0 0 8px' }}
+            >
+              Check your inbox
+            </h2>
+            <p style={{ fontSize: 14, color: 'var(--ds-ink-soft)', margin: '0 0 24px', lineHeight: 1.6 }}>
+              We sent a 6-digit code to{' '}
+              <span style={{ color: 'var(--ds-teal)', fontWeight: 600 }}>{email}</span>.
+              {' '}Enter it below to view your results.
             </p>
-            <form onSubmit={handleVerifyOtp} className="space-y-4">
+
+            <form onSubmit={handleVerifyOtp} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Verification code</label>
+                <label className="ds-label">Verification code</label>
                 <input
                   type="text"
                   required
@@ -164,31 +179,48 @@ export default function OtpModal({ onVerified }) {
                   value={otp}
                   onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
                   placeholder="123456"
-                  className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white text-2xl tracking-widest text-center focus:outline-none focus:border-blue-500"
+                  className="font-plex-mono ds-input"
+                  style={{ fontSize: 28, letterSpacing: '0.35em', textAlign: 'center', padding: '14px 16px' }}
                 />
               </div>
-              {error && <p className="text-red-400 text-xs">{error}</p>}
-              {resent && <p className="text-green-400 text-xs">A new code was sent to {email}.</p>}
+
+              {error && <p style={{ fontSize: 13, color: '#c0392b', margin: 0 }}>{error}</p>}
+              {resent && (
+                <p style={{ fontSize: 13, color: 'var(--ds-teal)', margin: 0 }}>
+                  A new code was sent to {email}.
+                </p>
+              )}
+
               <button
                 type="submit"
                 disabled={verifyMutation.isPending || otp.length < 6}
-                className="w-full rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-semibold py-3 text-sm transition-colors"
+                className="ds-btn ds-btn-solid"
+                style={{ justifyContent: 'center', marginTop: 4 }}
               >
                 {verifyMutation.isPending ? 'Verifying…' : 'Verify & see results'}
               </button>
-              <div className="flex items-center justify-between pt-1">
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 4 }}>
                 <button
                   type="button"
                   onClick={handleResend}
                   disabled={requestMutation.isPending}
-                  className="text-slate-500 text-xs hover:text-blue-400 disabled:opacity-40 transition-colors"
+                  style={{
+                    fontSize: 13, color: 'var(--ds-ink-faint)',
+                    background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                    fontFamily: 'inherit', transition: 'color 0.15s',
+                  }}
                 >
                   {requestMutation.isPending ? 'Sending…' : 'Resend code'}
                 </button>
                 <button
                   type="button"
                   onClick={() => { setStep('email'); setOtp(''); setError(''); setResent(false) }}
-                  className="text-slate-500 text-xs hover:text-slate-300 transition-colors"
+                  style={{
+                    fontSize: 13, color: 'var(--ds-ink-faint)',
+                    background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                    fontFamily: 'inherit', transition: 'color 0.15s',
+                  }}
                 >
                   Use a different email
                 </button>
