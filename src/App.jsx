@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import axios from 'axios'
+import SelectionPage from './pages/SelectionPage.jsx'
 import Assessment from './pages/Assessment.jsx'
 import Results from './pages/Results.jsx'
 import AdminLogin from './pages/AdminLogin.jsx'
@@ -29,7 +30,8 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Assessment />} />
+        <Route path="/" element={<SelectionPage />} />
+        <Route path="/assessment" element={<Assessment />} />
         <Route path="/results/:sessionId" element={<Results />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route

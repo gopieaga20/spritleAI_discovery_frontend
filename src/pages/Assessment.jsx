@@ -1,5 +1,6 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { useAssessmentStore } from '../stores/assessmentStore.js'
 import { useConfig } from '../hooks/useConfig.js'
@@ -25,9 +26,21 @@ const PULSE_D = buildPulsePath(PULSE_BEATS, PULSE_BEAT_WIDTH)
 
 export default function Assessment() {
   const navigate = useNavigate()
-  const { data: config, isLoading, isError } = useConfig()
+  const [searchParams] = useSearchParams()
 
+  const storedConfigType = useAssessmentStore((s) => s.configType)
+  const setConfigType = useAssessmentStore((s) => s.setConfigType)
 
+  // URL param takes precedence — survives page refresh
+  const urlType = searchParams.get('type')
+  const configType = (urlType === 'lite' || urlType === 'pro') ? urlType : storedConfigType
+
+  // Keep store in sync so submission payload is correct
+  useEffect(() => {
+    if (urlType === 'lite' || urlType === 'pro') {
+      setConfigType(urlType)
+    }
+  }, [urlType])
   const currentStageIndex = useAssessmentStore((s) => s.currentStageIndex)
   const currentQuestionIndex = useAssessmentStore((s) => s.currentQuestionIndex)
   const answers = useAssessmentStore((s) => s.answers)
@@ -36,6 +49,8 @@ export default function Assessment() {
   const setAnswer = useAssessmentStore((s) => s.setAnswer)
   const setNote = useAssessmentStore((s) => s.setNote)
   const reset = useAssessmentStore((s) => s.reset)
+
+  const { data: config, isLoading, isError } = useConfig(configType)
 
   const norm = (s) => (s == null ? '' : String(s)).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 
@@ -100,8 +115,9 @@ export default function Assessment() {
   const stageNavItems = stages.map((s) => ({ id: s.id, label: s.label, icon: s.icon }))
 
   const handleNext = () => {
-    if (currentQuestion?.pain_key && currentAnswer != null) {
-      useAssessmentStore.getState().addPainFlag(currentQuestion.pain_key)
+    const painKey = currentQuestion?.pain_key || currentQuestion?.tags
+    if (painKey && currentAnswer != null) {
+      useAssessmentStore.getState().addPainFlag(painKey)
     }
     if (isLastQuestion) {
       if (isLastStage) {
@@ -112,7 +128,7 @@ export default function Assessment() {
           answer_value,
           note_text: notesDict[question_key] || '',
         }))
-        submitMutation.mutate({ answers: answersPayload })
+        submitMutation.mutate({ config_type: configType, answers: answersPayload })
       } else {
         goToStage(currentStageIndex + 1)
       }
@@ -160,6 +176,17 @@ export default function Assessment() {
             style={{ fontSize: 10, letterSpacing: '0.14em', color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: 14 }}
           >
             AI Readiness Discovery
+          </span>
+          <span
+            className="font-plex-mono"
+            style={{
+              fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase',
+              color: '#fff', fontWeight: 600,
+              background: configType === 'lite' ? '#15AED5' : '#82C341',
+              borderRadius: 10, padding: '2px 8px',
+            }}
+          >
+            {configType === 'lite' ? 'Lite' : 'Pro'}
           </span>
         </div>
 

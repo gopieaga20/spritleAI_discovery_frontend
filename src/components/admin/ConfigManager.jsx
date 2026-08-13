@@ -1,6 +1,8 @@
 import { useState, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { ChevronDown, ChevronUp, Pencil } from 'lucide-react'
 import apiClient from '../../api/client.js'
+import { resolveStageIcon } from '../../utils/stageIcons.js'
 
 const QUESTION_TYPES = [
   'choice-grid', 'choice-row', 'multi-select', 'multi-select-ranked',
@@ -49,6 +51,13 @@ function OptionsEditor({ options, onChange }) {
 
   return (
     <div>
+      {options.length > 0 && (
+        <div style={{ display: 'flex', alignItems: 'center', paddingBottom: 6, marginBottom: 4, borderBottom: '1px solid var(--ds-line-soft)' }}>
+          <span style={{ flex: 1, fontSize: 11, color: 'var(--ds-ink-faint)', fontFamily: "'IBM Plex Mono', monospace", letterSpacing: '0.05em' }}>Label</span>
+          <span style={{ width: 90, fontSize: 11, color: 'var(--ds-ink-faint)', fontFamily: "'IBM Plex Mono', monospace", letterSpacing: '0.05em', textAlign: 'center' }}>Score</span>
+          <span style={{ width: 32 }} />
+        </div>
+      )}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
         {options.map((opt, i) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -65,13 +74,20 @@ function OptionsEditor({ options, onChange }) {
               onChange={(e) => update(i, 'score', e.target.value)}
               placeholder="Score"
               className="ds-input font-plex-mono"
-              style={{ width: 72, textAlign: 'center' }}
+              style={{ width: 90, textAlign: 'center' }}
             />
             <button
               onClick={() => remove(i)}
-              style={{ color: 'var(--ds-ink-faint)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: '0 4px', transition: 'color 0.15s' }}
-              onMouseEnter={(e) => e.currentTarget.style.color = '#c0392b'}
-              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--ds-ink-faint)'}
+              title="Remove option"
+              style={{
+                width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'none', border: '1px solid var(--ds-line)',
+                cursor: 'pointer', fontSize: 14, color: 'var(--ds-ink-faint)',
+                transition: 'color 0.15s, border-color 0.15s, background 0.15s',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = '#c0392b'; e.currentTarget.style.borderColor = 'rgba(192,57,43,0.4)'; e.currentTarget.style.background = 'rgba(192,57,43,0.06)' }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--ds-ink-faint)'; e.currentTarget.style.borderColor = 'var(--ds-line)'; e.currentTarget.style.background = 'none' }}
             >
               ×
             </button>
@@ -81,7 +97,7 @@ function OptionsEditor({ options, onChange }) {
       <button
         onClick={add}
         style={{
-          width: '100%', padding: '6px 0',
+          width: '100%', padding: '7px 0',
           border: '1px dashed var(--ds-line)',
           background: 'none', borderRadius: 8,
           fontSize: 12, color: 'var(--ds-ink-faint)', cursor: 'pointer',
@@ -143,25 +159,25 @@ function QuestionForm({ initial, stageId, onSave, onCancel, isSaving, industryCh
   }
 
   return (
-    <div className="ds-subform" style={{ borderColor: 'rgba(30,122,107,0.25)' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+    <div className="ds-subform" style={{ borderColor: 'rgba(30,122,107,0.25)', borderRadius: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
         <div style={{ gridColumn: '1/-1' }}>
-          <label className="ds-label">Question prompt *</label>
+          <label className="ds-label">Question Prompt *</label>
           <textarea
             rows={2}
             value={form.prompt}
             onChange={(e) => set('prompt', e.target.value)}
             className="ds-textarea"
             placeholder="Enter the question text…"
-            style={{ minHeight: 'unset', height: 64, backgroundImage: 'none', lineHeight: 1.5, padding: '8px 12px' }}
+            style={{ minHeight: 'unset', height: 68, backgroundImage: 'none', lineHeight: 1.55, padding: '10px 12px' }}
           />
         </div>
         <div>
-          <label className="ds-label">Helper text</label>
+          <label className="ds-label">Helper Text</label>
           <input value={form.subtext} onChange={(e) => set('subtext', e.target.value)} className="ds-input" placeholder="Optional sub-text" />
         </div>
         <div>
-          <label className="ds-label">Answer type *</label>
+          <label className="ds-label">Answer Type *</label>
           <select value={form.question_type} onChange={(e) => set('question_type', e.target.value)} className="ds-select">
             {QUESTION_TYPES.map((t) => (
               <option key={t} value={t}>{TYPE_LABELS[t] || t}</option>
@@ -171,20 +187,20 @@ function QuestionForm({ initial, stageId, onSave, onCancel, isSaving, industryCh
 
         {showChoices && (
           <div style={{ gridColumn: '1/-1' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
               <label className="ds-label" style={{ margin: 0 }}>Options &amp; Scores</label>
-              <span style={{ fontSize: 11, color: 'var(--ds-ink-faint)' }}>Label → Score (leave score blank if n/a)</span>
+              <span style={{ fontSize: 11, color: 'var(--ds-ink-faint)', fontStyle: 'italic' }}>Leave score blank if n/a</span>
             </div>
             <OptionsEditor options={form.options} onChange={(opts) => set('options', opts)} />
           </div>
         )}
 
         <div>
-          <label className="ds-label">Tags <span style={{ color: 'var(--ds-ink-faint)', textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
-          <input value={form.tags} onChange={(e) => set('tags', e.target.value)} className="ds-input" placeholder="Scheduling_Automation,No_Show" />
+          <label className="ds-label">Tags <span style={{ color: 'var(--ds-ink-faint)', textTransform: 'none', letterSpacing: 0, fontSize: 10 }}>(optional)</span></label>
+          <input value={form.tags} onChange={(e) => set('tags', e.target.value)} className="ds-input" placeholder="Tag_A, Tag_B" />
         </div>
         <div>
-          <label className="ds-label">Show only for industry</label>
+          <label className="ds-label">Show Only for Industry</label>
           <select value={industrySelectValue} onChange={(e) => handleIndustryChange(e.target.value)} className="ds-select">
             <option value="">All industries (always show)</option>
             {industryChoices.map((c) => (
@@ -193,29 +209,51 @@ function QuestionForm({ initial, stageId, onSave, onCancel, isSaving, industryCh
           </select>
         </div>
         <div>
-          <label className="ds-label">Sort order</label>
+          <label className="ds-label">Sort Order</label>
           <input type="number" value={form.sort_order} onChange={(e) => set('sort_order', e.target.value)} className="ds-input" />
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 18 }}>
           <input
             type="checkbox"
             id={`qactive-${form.prompt}`}
             checked={form.is_active}
             onChange={(e) => set('is_active', e.target.checked)}
-            style={{ accentColor: 'var(--ds-teal)', width: 14, height: 14 }}
+            style={{ accentColor: 'var(--ds-teal)', width: 15, height: 15, cursor: 'pointer' }}
           />
           <label htmlFor={`qactive-${form.prompt}`} style={{ fontSize: 13, color: 'var(--ds-ink)', cursor: 'pointer' }}>Active</label>
         </div>
       </div>
-      <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+      <div style={{ display: 'flex', gap: 10, marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--ds-line-soft)' }}>
         <button
           onClick={() => onSave(buildPayload())}
           disabled={isSaving || !form.prompt.trim()}
-          className="ds-btn ds-btn-solid ds-btn-xs"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            fontSize: 12, fontWeight: 600, padding: '6px 16px', borderRadius: 7,
+            background: (isSaving || !form.prompt.trim()) ? 'var(--ds-line)' : 'var(--ds-teal)',
+            color: (isSaving || !form.prompt.trim()) ? 'var(--ds-ink-faint)' : '#fff',
+            border: 'none', cursor: (isSaving || !form.prompt.trim()) ? 'not-allowed' : 'pointer',
+            fontFamily: 'inherit', transition: 'background 0.15s',
+          }}
+          onMouseEnter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.background = 'var(--ds-teal-dark)' }}
+          onMouseLeave={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.background = 'var(--ds-teal)' }}
         >
-          {isSaving ? 'Saving…' : 'Save'}
+          {isSaving ? 'Saving…' : '✓ Save'}
         </button>
-        <button onClick={onCancel} className="ds-btn ds-btn-ghost ds-btn-xs">Cancel</button>
+        <button
+          onClick={onCancel}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 5,
+            fontSize: 12, fontWeight: 500, padding: '6px 14px', borderRadius: 7,
+            background: 'rgba(192,57,43,0.07)', color: '#c0392b',
+            border: '1px solid rgba(192,57,43,0.3)',
+            cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.15s',
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(192,57,43,0.14)' }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(192,57,43,0.07)' }}
+        >
+          ✕ Cancel
+        </button>
       </div>
     </div>
   )
@@ -236,35 +274,36 @@ function StageForm({ stage, onSave, onCancel, isSaving }) {
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }))
 
   return (
-    <div className="ds-subform" style={{ borderColor: 'rgba(210,148,30,0.3)' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 100px', gap: 12 }}>
+    <div className="ds-subform" style={{ borderColor: 'rgba(219,145,48,0.3)', borderRadius: 12 }}>
+      <div style={{ fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ds-amber)', marginBottom: 12, fontWeight: 600 }}>Edit Stage</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 90px', gap: 14 }}>
         <div style={{ gridColumn: '1/3' }}>
-          <label className="ds-label">Stage label *</label>
+          <label className="ds-label">Stage Label *</label>
           <input value={form.label} onChange={(e) => set('label', e.target.value)} className="ds-input" />
         </div>
         <div>
           <label className="ds-label">Icon (emoji)</label>
-          <input value={form.icon} onChange={(e) => set('icon', e.target.value)} className="ds-input" placeholder="🏢" maxLength={4} />
+          <input value={form.icon} onChange={(e) => set('icon', e.target.value)} className="ds-input" placeholder="🏢" maxLength={4} style={{ textAlign: 'center', fontSize: 18 }} />
         </div>
         <div style={{ gridColumn: '1/-1' }}>
           <label className="ds-label">Description</label>
-          <input value={form.description} onChange={(e) => set('description', e.target.value)} className="ds-input" />
+          <input value={form.description} onChange={(e) => set('description', e.target.value)} className="ds-input" placeholder="Brief description of this stage…" />
         </div>
         <div>
-          <label className="ds-label">Sort order</label>
+          <label className="ds-label">Sort Order</label>
           <input type="number" value={form.sort_order} onChange={(e) => set('sort_order', e.target.value)} className="ds-input" />
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 20 }}>
-          <input type="checkbox" checked={form.is_active} onChange={(e) => set('is_active', e.target.checked)} style={{ accentColor: 'var(--ds-teal)', width: 14, height: 14 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 18 }}>
+          <input type="checkbox" checked={form.is_active} onChange={(e) => set('is_active', e.target.checked)} style={{ accentColor: 'var(--ds-teal)', width: 15, height: 15, cursor: 'pointer' }} />
           <label style={{ fontSize: 13, color: 'var(--ds-ink)', cursor: 'pointer' }}>Active</label>
         </div>
       </div>
-      <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+      <div style={{ display: 'flex', gap: 10, marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--ds-line-soft)' }}>
         <button
           onClick={() => onSave(form)}
           disabled={isSaving || !form.label.trim()}
           className="ds-btn ds-btn-xs"
-          style={{ background: 'var(--ds-amber)', color: 'var(--ds-ink)', border: 'none', fontWeight: 600, opacity: (isSaving || !form.label.trim()) ? 0.4 : 1 }}
+          style={{ background: 'var(--ds-amber)', color: '#fff', border: 'none', fontWeight: 600, opacity: (isSaving || !form.label.trim()) ? 0.4 : 1 }}
         >
           {isSaving ? 'Saving…' : 'Save Stage'}
         </button>
@@ -283,9 +322,9 @@ function AddStageForm({ onSave, onCancel, isSaving }) {
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }))
 
   return (
-    <div className="ds-subform" style={{ borderColor: 'rgba(26,122,46,0.3)', marginBottom: 16 }}>
-      <div className="font-plex-mono" style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#1a7a2e', marginBottom: 12 }}>New Stage</div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 80px', gap: 12 }}>
+    <div className="ds-subform" style={{ borderColor: 'rgba(26,122,46,0.3)', borderRadius: 12, marginBottom: 16 }}>
+      <div style={{ fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", letterSpacing: '0.1em', textTransform: 'uppercase', color: '#1a7a2e', marginBottom: 12, fontWeight: 600 }}>New Stage</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 80px', gap: 14 }}>
         <div>
           <label className="ds-label">Stage ID (slug) *</label>
           <input value={form.id} onChange={(e) => set('id', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))} className="ds-input font-plex-mono" placeholder="my-stage" />
@@ -296,18 +335,18 @@ function AddStageForm({ onSave, onCancel, isSaving }) {
         </div>
         <div>
           <label className="ds-label">Icon</label>
-          <input value={form.icon} onChange={(e) => set('icon', e.target.value)} className="ds-input" placeholder="🏢" maxLength={4} />
+          <input value={form.icon} onChange={(e) => set('icon', e.target.value)} className="ds-input" placeholder="🏢" maxLength={4} style={{ textAlign: 'center', fontSize: 18 }} />
         </div>
         <div style={{ gridColumn: '1/-1' }}>
           <label className="ds-label">Description</label>
-          <input value={form.description} onChange={(e) => set('description', e.target.value)} className="ds-input" />
+          <input value={form.description} onChange={(e) => set('description', e.target.value)} className="ds-input" placeholder="Brief description of this stage…" />
         </div>
         <div>
-          <label className="ds-label">Sort order</label>
+          <label className="ds-label">Sort Order</label>
           <input type="number" value={form.sort_order} onChange={(e) => set('sort_order', e.target.value)} className="ds-input" />
         </div>
       </div>
-      <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+      <div style={{ display: 'flex', gap: 10, marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--ds-line-soft)' }}>
         <button
           onClick={() => onSave(form)}
           disabled={isSaving || !form.id || !form.label}
@@ -326,30 +365,34 @@ function AddStageForm({ onSave, onCancel, isSaving }) {
 // StageCard
 // ---------------------------------------------------------------------------
 
-function StageCard({ stage, qc, industryChoices, industryQId }) {
+function StageCard({ stage, qc, industryChoices, industryQId, configType }) {
   const [expanded, setExpanded] = useState(false)
   const [editingStage, setEditingStage] = useState(false)
   const [editingQId, setEditingQId] = useState(null)
   const [addingQ, setAddingQ] = useState(false)
+  const [headerHovered, setHeaderHovered] = useState(false)
+
+  const configParam = configType === 'lite' ? '?config_type=lite' : ''
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['admin-config', configType] })
 
   const updateStage = useMutation({
-    mutationFn: (data) => apiClient.put(`/admin/config/stages/${stage.id}/`, data).then((r) => r.data),
-    onSuccess: () => { setEditingStage(false); qc.invalidateQueries({ queryKey: ['admin-config'] }) },
+    mutationFn: (data) => apiClient.put(`/admin/config/stages/${stage.id}/${configParam}`, data).then((r) => r.data),
+    onSuccess: () => { setEditingStage(false); invalidate() },
   })
 
   const updateQ = useMutation({
-    mutationFn: ({ id, data }) => apiClient.put(`/admin/config/questions/${id}/`, data).then((r) => r.data),
-    onSuccess: () => { setEditingQId(null); qc.invalidateQueries({ queryKey: ['admin-config'] }) },
+    mutationFn: ({ id, data }) => apiClient.put(`/admin/config/questions/${id}/${configParam}`, data).then((r) => r.data),
+    onSuccess: () => { setEditingQId(null); invalidate() },
   })
 
   const deleteQ = useMutation({
-    mutationFn: (id) => apiClient.delete(`/admin/config/questions/${id}/`).then((r) => r.data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-config'] }),
+    mutationFn: (id) => apiClient.delete(`/admin/config/questions/${id}/${configParam}`).then((r) => r.data),
+    onSuccess: () => invalidate(),
   })
 
   const addQ = useMutation({
-    mutationFn: (data) => apiClient.post('/admin/config/questions/', data).then((r) => r.data),
-    onSuccess: () => { setAddingQ(false); qc.invalidateQueries({ queryKey: ['admin-config'] }) },
+    mutationFn: (data) => apiClient.post(`/admin/config/questions/${configParam}`, data).then((r) => r.data),
+    onSuccess: () => { setAddingQ(false); invalidate() },
   })
 
   const activeQs = (stage.questions || []).filter((q) => q.is_active !== false || editingQId === q.id)
@@ -370,43 +413,71 @@ function StageCard({ stage, qc, industryChoices, industryQId }) {
   }
 
   return (
-    <div className="ds-content-card" style={{ padding: 0, marginBottom: 12, overflow: 'hidden' }}>
+    <div className="ds-content-card" style={{ padding: 0, marginBottom: 16, overflow: 'hidden' }}>
       {/* Stage header */}
-      <div style={{ padding: '14px 20px' }}>
+      <div
+        style={{
+          padding: '16px 20px',
+          background: headerHovered ? 'rgba(0,0,0,0.018)' : 'transparent',
+          transition: 'background 0.15s',
+        }}
+        onMouseEnter={() => setHeaderHovered(true)}
+        onMouseLeave={() => setHeaderHovered(false)}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button
             onClick={() => setExpanded((e) => !e)}
             style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}
           >
-            <span style={{ fontSize: 20 }}>{stage.icon || '📋'}</span>
+            {/* Icon in teal circle */}
+            <span style={{
+              width: 38, height: 38, borderRadius: 10, flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 18,
+              background: 'rgba(30,122,107,0.09)',
+              border: '1px solid rgba(30,122,107,0.15)',
+            }}>
+              {stage.icon || resolveStageIcon(stage.id, stage.label)}
+            </span>
+
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--ds-ink)' }}>{stage.label}</span>
-                <span className="font-plex-mono" style={{ fontSize: 10, color: 'var(--ds-teal)', background: 'rgba(30,122,107,0.08)', border: '1px solid rgba(30,122,107,0.2)', borderRadius: 20, padding: '1px 8px' }}>
+                <span style={{ fontWeight: 600, fontSize: 14.5, color: 'var(--ds-ink)' }}>{stage.label}</span>
+                <span className="font-plex-mono" style={{ fontSize: 10, color: 'var(--ds-teal)', background: 'rgba(30,122,107,0.08)', border: '1px solid rgba(30,122,107,0.2)', borderRadius: 20, padding: '2px 8px', fontWeight: 500 }}>
                   {activeQs.length} questions
                 </span>
                 {inactiveCount > 0 && (
                   <span style={{ fontSize: 11, color: 'var(--ds-ink-faint)' }}>{inactiveCount} hidden</span>
                 )}
                 {!stage.is_active && (
-                  <span className="font-plex-mono" style={{ fontSize: 10, color: '#c0392b', background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', borderRadius: 20, padding: '1px 8px' }}>Inactive</span>
+                  <span className="font-plex-mono" style={{ fontSize: 10, color: '#c0392b', background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', borderRadius: 20, padding: '2px 8px' }}>Inactive</span>
                 )}
               </div>
-              {stage.description && <div style={{ fontSize: 12, color: 'var(--ds-ink-soft)', marginTop: 2 }}>{stage.description}</div>}
+              {stage.description && <div style={{ fontSize: 12, color: 'var(--ds-ink-soft)', marginTop: 3, lineHeight: 1.5 }}>{stage.description}</div>}
             </div>
-            <span style={{ fontSize: 12, color: 'var(--ds-ink-faint)' }}>{expanded ? '▲' : '▼'}</span>
+
+            {/* Chevron toggle */}
+            <span style={{ color: 'var(--ds-ink-faint)', display: 'flex', alignItems: 'center', marginRight: 4 }}>
+              {expanded ? <ChevronUp size={17} /> : <ChevronDown size={17} />}
+            </span>
           </button>
+
+          {/* Edit Stage button */}
           <button
             onClick={() => setEditingStage((e) => !e)}
-            className="ds-btn-xs"
             style={{
-              fontSize: 11, color: 'var(--ds-ink-soft)',
-              border: '1px solid var(--ds-line)', borderRadius: 6, padding: '3px 10px',
-              background: 'none', cursor: 'pointer', fontFamily: 'inherit', transition: 'color 0.15s, border-color 0.15s',
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              fontSize: 12, color: editingStage ? 'var(--ds-amber)' : 'var(--ds-ink-soft)',
+              border: `1px solid ${editingStage ? 'var(--ds-amber)' : 'var(--ds-line)'}`,
+              borderRadius: 8, padding: '5px 12px',
+              background: editingStage ? 'rgba(219,145,48,0.06)' : 'none',
+              cursor: 'pointer', fontFamily: 'inherit',
+              transition: 'color 0.15s, border-color 0.15s, background 0.15s',
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--ds-amber)'; e.currentTarget.style.borderColor = 'var(--ds-amber)' }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--ds-ink-soft)'; e.currentTarget.style.borderColor = 'var(--ds-line)' }}
+            onMouseEnter={(e) => { if (!editingStage) { e.currentTarget.style.color = 'var(--ds-amber)'; e.currentTarget.style.borderColor = 'var(--ds-amber)' } }}
+            onMouseLeave={(e) => { if (!editingStage) { e.currentTarget.style.color = 'var(--ds-ink-soft)'; e.currentTarget.style.borderColor = 'var(--ds-line)' } }}
           >
+            <Pencil size={12} />
             Edit Stage
           </button>
         </div>
@@ -423,69 +494,22 @@ function StageCard({ stage, qc, industryChoices, industryQId }) {
 
       {/* Questions list */}
       {expanded && (
-        <div style={{ borderTop: '1px solid var(--ds-line)', padding: '4px 20px 16px' }}>
+        <div style={{ borderTop: '1px solid var(--ds-line)', padding: '8px 20px 20px' }}>
           {activeQs.length === 0 && !addingQ && (
-            <div style={{ fontSize: 13, color: 'var(--ds-ink-faint)', padding: '16px 0', textAlign: 'center' }}>No active questions in this stage.</div>
+            <div style={{ fontSize: 13, color: 'var(--ds-ink-faint)', padding: '20px 0', textAlign: 'center' }}>No active questions in this stage.</div>
           )}
 
           {activeQs.map((q, idx) => (
-            <div key={q.id}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 0', borderTop: idx === 0 ? 'none' : '1px solid var(--ds-line-soft)' }}>
-                <span className="font-plex-mono" style={{ fontSize: 11, color: 'var(--ds-ink-faint)', width: 18, paddingTop: 2, flexShrink: 0 }}>{idx + 1}</span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, color: 'var(--ds-ink)', lineHeight: 1.45 }}>{q.prompt}</div>
-                  {q.subtext && <div style={{ fontSize: 12, color: 'var(--ds-ink-soft)', marginTop: 2 }}>{q.subtext}</div>}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
-                    <span className="font-plex-mono" style={{ fontSize: 10, background: 'var(--ds-paper)', border: '1px solid var(--ds-line)', color: 'var(--ds-ink-soft)', borderRadius: 4, padding: '2px 6px' }}>
-                      {TYPE_LABELS[q.question_type] || q.question_type}
-                    </span>
-                    {q.tags && <span style={{ fontSize: 11, color: 'var(--ds-amber)', fontWeight: 500 }}>{q.tags}</span>}
-                  </div>
-                  {q.type_config?.choices?.length > 0 && (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
-                      {q.type_config.choices.map((c) => {
-                        const scoreMap = q.type_config.score_map || {}
-                        const hasScores = Object.keys(scoreMap).length > 0
-                        const score = hasScores ? (scoreMap[c.value] ?? scoreMap[c.label] ?? null) : null
-                        const style = score == null
-                          ? { color: 'var(--ds-ink-faint)', border: '1px solid var(--ds-line)', background: 'var(--ds-paper)' }
-                          : score >= 80
-                          ? { color: '#1a7a2e', border: '1px solid rgba(26,122,46,0.3)', background: 'rgba(26,122,46,0.07)' }
-                          : score >= 50
-                          ? { color: '#a05c00', border: '1px solid rgba(160,92,0,0.3)', background: 'rgba(160,92,0,0.07)' }
-                          : { color: '#c0392b', border: '1px solid rgba(192,57,43,0.3)', background: 'rgba(192,57,43,0.07)' }
-                        return (
-                          <span key={c.value} className="font-plex-mono" style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, display: 'inline-flex', alignItems: 'center', gap: 4, ...style }}>
-                            {c.label}
-                            {score != null && <span style={{ fontWeight: 700 }}>{score}</span>}
-                          </span>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
-                <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                  <button
-                    onClick={() => setEditingQId(editingQId === q.id ? null : q.id)}
-                    style={{ fontSize: 11, color: 'var(--ds-ink-soft)', border: '1px solid var(--ds-line)', borderRadius: 6, padding: '3px 10px', background: 'none', cursor: 'pointer', fontFamily: 'inherit', transition: 'color 0.15s, border-color 0.15s' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--ds-teal)'; e.currentTarget.style.borderColor = 'var(--ds-teal)' }}
-                    onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--ds-ink-soft)'; e.currentTarget.style.borderColor = 'var(--ds-line)' }}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => confirmDelete(q)}
-                    disabled={deleteQ.isPending}
-                    style={{ fontSize: 11, color: 'var(--ds-ink-faint)', border: '1px solid var(--ds-line)', borderRadius: 6, padding: '3px 10px', background: 'none', cursor: 'pointer', fontFamily: 'inherit', transition: 'color 0.15s, border-color 0.15s' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.color = '#c0392b'; e.currentTarget.style.borderColor = 'rgba(192,57,43,0.4)' }}
-                    onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--ds-ink-faint)'; e.currentTarget.style.borderColor = 'var(--ds-line)' }}
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-
-              {editingQId === q.id && (
+            <QuestionRow
+              key={q.id}
+              q={q}
+              idx={idx}
+              isFirst={idx === 0}
+              isEditing={editingQId === q.id}
+              onEdit={() => setEditingQId(editingQId === q.id ? null : q.id)}
+              onDelete={() => confirmDelete(q)}
+              isDeleting={deleteQ.isPending}
+              editForm={editingQId === q.id && (
                 <QuestionForm
                   initial={q}
                   stageId={stage.id}
@@ -496,11 +520,11 @@ function StageCard({ stage, qc, industryChoices, industryQId }) {
                   industryQId={industryQId}
                 />
               )}
-            </div>
+            />
           ))}
 
           {addingQ ? (
-            <div style={{ marginTop: 12 }}>
+            <div style={{ marginTop: 14 }}>
               <QuestionForm
                 initial={emptyQuestionForm(stage.id)}
                 stageId={stage.id}
@@ -515,7 +539,7 @@ function StageCard({ stage, qc, industryChoices, industryQId }) {
             <button
               onClick={() => setAddingQ(true)}
               style={{
-                marginTop: 12, width: '100%', padding: '8px 0',
+                marginTop: 14, width: '100%', padding: '9px 0',
                 border: '1px dashed var(--ds-line)', borderRadius: 10,
                 fontSize: 13, color: 'var(--ds-ink-faint)',
                 background: 'none', cursor: 'pointer', fontFamily: 'inherit',
@@ -534,10 +558,124 @@ function StageCard({ stage, qc, industryChoices, industryQId }) {
 }
 
 // ---------------------------------------------------------------------------
+// QuestionRow (extracted for cleaner hover state management)
+// ---------------------------------------------------------------------------
+
+function QuestionRow({ q, idx, isFirst, isEditing, onEdit, onDelete, isDeleting, editForm }) {
+  const [hovered, setHovered] = useState(false)
+
+  return (
+    <div>
+      <div
+        style={{
+          display: 'flex', alignItems: 'flex-start', gap: 12,
+          padding: '14px 10px',
+          marginLeft: -10, marginRight: -10,
+          borderTop: isFirst ? 'none' : '1px solid var(--ds-line-soft)',
+          borderRadius: 8,
+          background: hovered ? 'rgba(0,0,0,0.022)' : 'transparent',
+          transition: 'background 0.12s',
+        }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
+        {/* Circle number */}
+        <span style={{
+          width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'var(--ds-paper)', border: '1px solid var(--ds-line)',
+          fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
+          color: 'var(--ds-ink-faint)', marginTop: 1,
+        }}>
+          {idx + 1}
+        </span>
+
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 13.5, color: 'var(--ds-ink)', lineHeight: 1.5, fontWeight: 500 }}>{q.prompt}</div>
+          {q.subtext && <div style={{ fontSize: 12, color: 'var(--ds-ink-soft)', marginTop: 2 }}>{q.subtext}</div>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 7, flexWrap: 'wrap' }}>
+            <span className="font-plex-mono" style={{ fontSize: 10, background: 'var(--ds-paper)', border: '1px solid var(--ds-line)', color: 'var(--ds-ink-soft)', borderRadius: 5, padding: '2px 7px' }}>
+              {TYPE_LABELS[q.question_type] || q.question_type}
+            </span>
+            {q.tags && (
+              <span style={{ fontSize: 11, color: 'var(--ds-amber)', fontWeight: 500, background: 'rgba(219,145,48,0.08)', borderRadius: 4, padding: '1px 6px' }}>
+                {q.tags}
+              </span>
+            )}
+          </div>
+          {q.type_config?.choices?.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+              {q.type_config.choices.map((c) => {
+                const scoreMap = q.type_config.score_map || {}
+                const hasScores = Object.keys(scoreMap).length > 0
+                const score = hasScores ? (scoreMap[c.value] ?? scoreMap[c.label] ?? null) : null
+                const chipStyle = score == null
+                  ? { color: 'var(--ds-ink-soft)', border: '1px solid var(--ds-line)', background: 'var(--ds-paper)' }
+                  : score >= 80
+                  ? { color: '#1a7a2e', border: '1px solid rgba(26,122,46,0.3)', background: 'rgba(26,122,46,0.07)' }
+                  : score >= 50
+                  ? { color: '#a05c00', border: '1px solid rgba(160,92,0,0.3)', background: 'rgba(160,92,0,0.07)' }
+                  : { color: '#c0392b', border: '1px solid rgba(192,57,43,0.3)', background: 'rgba(192,57,43,0.07)' }
+                return (
+                  <span key={c.value} className="font-plex-mono" style={{ fontSize: 11, padding: '2px 9px', borderRadius: 20, display: 'inline-flex', alignItems: 'center', gap: 5, ...chipStyle }}>
+                    {c.label}
+                    {score != null && <b style={{ fontWeight: 700 }}>{score}</b>}
+                  </span>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Action buttons */}
+        <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
+          <button
+            onClick={onEdit}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              fontSize: 11, fontWeight: 600,
+              color: isEditing ? '#fff' : 'var(--ds-teal)',
+              border: '1px solid var(--ds-teal)',
+              borderRadius: 7, padding: '4px 10px',
+              background: isEditing ? 'var(--ds-teal)' : 'rgba(30,122,107,0.07)',
+              cursor: 'pointer', fontFamily: 'inherit',
+              transition: 'color 0.15s, background 0.15s',
+            }}
+            onMouseEnter={(e) => { if (!isEditing) { e.currentTarget.style.background = 'rgba(30,122,107,0.15)' } }}
+            onMouseLeave={(e) => { if (!isEditing) { e.currentTarget.style.background = 'rgba(30,122,107,0.07)' } }}
+          >
+            <Pencil size={11} /> Edit
+          </button>
+          <button
+            onClick={onDelete}
+            disabled={isDeleting}
+            title="Deactivate question"
+            style={{
+              width: 28, height: 28, borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 14, color: '#c0392b',
+              border: '1px solid rgba(192,57,43,0.35)',
+              background: 'rgba(192,57,43,0.07)', cursor: 'pointer',
+              transition: 'background 0.15s, border-color 0.15s',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(192,57,43,0.15)'; e.currentTarget.style.borderColor = 'rgba(192,57,43,0.5)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(192,57,43,0.07)'; e.currentTarget.style.borderColor = 'rgba(192,57,43,0.35)' }}
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+
+      {editForm && <div style={{ marginBottom: 4 }}>{editForm}</div>}
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // ImportTab
 // ---------------------------------------------------------------------------
 
-function ImportTab({ qc }) {
+function ImportTab({ qc, configType }) {
   const fileRef = useRef(null)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
@@ -547,6 +685,7 @@ function ImportTab({ qc }) {
     mutationFn: (file) => {
       const fd = new FormData()
       fd.append('file', file)
+      fd.append('config_type', configType)
       return apiClient.post('/admin/config/import/', fd, {
         headers: { 'Content-Type': 'multipart/form-data' },
       }).then((r) => r.data)
@@ -574,11 +713,11 @@ function ImportTab({ qc }) {
   const handleDownloadTemplate = async () => {
     setDownloading(true)
     try {
-      const res = await apiClient.get('/admin/config/import/', { responseType: 'blob' })
+      const res = await apiClient.get(`/admin/config/import/?config_type=${configType}`, { responseType: 'blob' })
       const url = URL.createObjectURL(res.data)
       const a = document.createElement('a')
       a.href = url
-      a.download = 'survey_import_template.xlsx'
+      a.download = `survey_import_template_${configType}.xlsx`
       a.click()
       URL.revokeObjectURL(url)
     } catch {
@@ -670,35 +809,72 @@ function ImportTab({ qc }) {
 
 export default function ConfigManager() {
   const qc = useQueryClient()
+  const [configType, setConfigType] = useState('pro')
   const [tab, setTab] = useState('stages')
   const [addingStage, setAddingStage] = useState(false)
 
+  const configParam = configType === 'lite' ? '?config_type=lite' : ''
+
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['admin-config'],
-    queryFn: () => apiClient.get('/admin/config/').then((r) => r.data),
+    queryKey: ['admin-config', configType],
+    queryFn: () => apiClient.get(`/admin/config/${configParam}`).then((r) => r.data),
   })
 
   const createStage = useMutation({
-    mutationFn: (d) => apiClient.post('/admin/config/stages/', d).then((r) => r.data),
-    onSuccess: () => { setAddingStage(false); qc.invalidateQueries({ queryKey: ['admin-config'] }) },
+    mutationFn: (d) => apiClient.post(`/admin/config/stages/${configParam}`, d).then((r) => r.data),
+    onSuccess: () => { setAddingStage(false); qc.invalidateQueries({ queryKey: ['admin-config', configType] }) },
   })
 
   const stages = data?.stages || []
   const scoring = data?.scoring || []
 
   const { industryChoices, industryQId } = (() => {
+    // Pro: Q1.1 | Lite: BU1 — fall back to Domain_Root tag for any other naming
+    const targetId = configType === 'lite' ? 'BU1' : 'Q1.1'
     for (const stage of stages) {
-      const q = (stage.questions || []).find((q) => q.id === 'Q1.1' || q.id === 'b_industry')
+      const q = (stage.questions || []).find((q) =>
+        q.id === targetId ||
+        q.id === 'b_industry' ||
+        (q.tags && q.tags.split(',').map((t) => t.trim()).includes('Domain_Root'))
+      )
       if (q) return { industryChoices: q.type_config?.choices || [], industryQId: q.id }
     }
-    return { industryChoices: [], industryQId: 'Q1.1' }
+    return { industryChoices: [], industryQId: targetId }
   })()
 
   return (
     <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", color: 'var(--ds-ink)' }}>
+
+      {/* Pro / Lite toggle */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 22 }}>
+        <span style={{ fontSize: 12, color: 'var(--ds-ink-faint)', marginRight: 4 }}>Config:</span>
+        {[['pro', 'Pro', '#82C341', 'rgba(130,195,65,0.12)', 'rgba(130,195,65,0.4)'],
+          ['lite', 'Lite', '#15AED5', 'rgba(21,174,213,0.12)', 'rgba(21,174,213,0.4)']].map(([val, label, color, bg, border]) => (
+          <button
+            key={val}
+            onClick={() => { setConfigType(val); setAddingStage(false) }}
+            className="font-plex-mono"
+            style={{
+              fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase',
+              padding: '5px 16px', borderRadius: 20, cursor: 'pointer',
+              fontFamily: 'inherit', transition: 'all 0.15s',
+              border: configType === val ? `1.5px solid ${border}` : '1px solid var(--ds-line)',
+              background: configType === val ? bg : 'transparent',
+              color: configType === val ? color : 'var(--ds-ink-faint)',
+              fontWeight: configType === val ? 700 : 400,
+            }}
+          >
+            {label}
+          </button>
+        ))}
+        <span className="font-plex-mono" style={{ fontSize: 11, color: 'var(--ds-ink-faint)', marginLeft: 4 }}>
+          {configType === 'lite' ? '6 stages · ~20 questions' : '7 stages · 40+ questions'}
+        </span>
+      </div>
+
       {/* Sub-tab bar */}
       <div style={{ display: 'flex', borderBottom: '1px solid var(--ds-line)', marginBottom: 24 }}>
-        {[['stages', 'Survey Stages'], ['scoring', 'Scoring'], ['import', 'Import']].map(([key, label]) => (
+        {[['stages', 'Survey Stages'], /* ['scoring', 'Scoring'], */ ['import', 'Import']].map(([key, label]) => (
           <button
             key={key}
             onClick={() => setTab(key)}
@@ -713,7 +889,9 @@ export default function ConfigManager() {
       {tab === 'stages' && (
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <span style={{ fontSize: 13, color: 'var(--ds-ink-faint)' }}>{stages.length} stages</span>
+            <span style={{ fontSize: 13, color: 'var(--ds-ink-soft)' }}>
+              <b style={{ color: 'var(--ds-ink)' }}>{stages.length}</b> stages
+            </span>
             <button
               onClick={() => setAddingStage((s) => !s)}
               className="ds-btn ds-btn-ghost ds-btn-xs"
@@ -735,7 +913,7 @@ export default function ConfigManager() {
           {isError && <p style={{ color: '#c0392b', fontSize: 13 }}>Failed to load config.</p>}
 
           {stages.map((stage) => (
-            <StageCard key={stage.id} stage={stage} qc={qc} industryChoices={industryChoices} industryQId={industryQId} />
+            <StageCard key={stage.id} stage={stage} qc={qc} industryChoices={industryChoices} industryQId={industryQId} configType={configType} />
           ))}
         </div>
       )}
@@ -751,7 +929,7 @@ export default function ConfigManager() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {scoring.map((dim) => (
               <div key={dim.id} className="ds-content-card" style={{ padding: 0, overflow: 'hidden' }}>
-                <div style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--ds-line)' }}>
+                <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--ds-line)' }}>
                   <div style={{ width: 12, height: 12, borderRadius: '50%', flexShrink: 0, backgroundColor: dim.color || 'var(--ds-teal)' }} />
                   <div style={{ flex: 1 }}>
                     <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--ds-ink)' }}>{dim.label}</span>
@@ -792,7 +970,7 @@ export default function ConfigManager() {
         </div>
       )}
 
-      {tab === 'import' && <ImportTab qc={qc} />}
+      {tab === 'import' && <ImportTab qc={qc} configType={configType} />}
     </div>
   )
 }

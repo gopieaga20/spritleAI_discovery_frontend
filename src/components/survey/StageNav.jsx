@@ -1,4 +1,5 @@
 import { Check } from 'lucide-react'
+import { resolveStageIcon } from '../../utils/stageIcons.js'
 
 export default function StageNav({ stages, currentIndex, onSelect }) {
   return (
@@ -77,7 +78,7 @@ export default function StageNav({ stages, currentIndex, onSelect }) {
                 >
                   {isDone
                     ? <Check size={14} strokeWidth={3} />
-                    : stage.icon || <span style={{ fontSize: 11 }}>●</span>
+                    : stage.icon || resolveStageIcon(stage.id, stage.label)
                   }
                 </span>
 

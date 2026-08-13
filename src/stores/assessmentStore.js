@@ -2,12 +2,15 @@ import { create } from 'zustand'
 
 export const useAssessmentStore = create((set, get) => ({
   sessionId: null,
+  configType: 'pro',
   currentStageIndex: 0,
   currentQuestionIndex: 0,
   answers: {},       // { questionKey: value }
   notesDict: {},     // { questionKey: noteText }
   stageMap: {},      // { questionKey: stageId }
   painFlags: [],     // derived pain flag ids (tracked locally for branch logic)
+
+  setConfigType: (type) => set({ configType: type }),
 
   setSessionId: (id) => set({ sessionId: id }),
 
@@ -51,6 +54,7 @@ export const useAssessmentStore = create((set, get) => ({
   reset: () =>
     set({
       sessionId: null,
+      configType: 'pro',
       currentStageIndex: 0,
       currentQuestionIndex: 0,
       answers: {},

@@ -15,7 +15,7 @@ const COUNTRY_CODES = [
   { code: '+86', label: 'CN +86' },
 ]
 
-export default function OtpModal({ onVerified }) {
+export default function OtpModal({ onVerified, onClose }) {
   const [step, setStep] = useState('email')
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
@@ -71,6 +71,7 @@ export default function OtpModal({ onVerified }) {
 
   return (
     <div
+      className="no-print"
       style={{
         position: 'fixed', inset: 0,
         background: 'rgba(22,35,43,0.6)',
@@ -88,8 +89,27 @@ export default function OtpModal({ onVerified }) {
           padding: 32,
           fontFamily: "'IBM Plex Sans', sans-serif",
           color: 'var(--ds-ink)',
+          position: 'relative',
         }}
       >
+        {onClose && (
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            style={{
+              position: 'absolute', top: 14, right: 14,
+              width: 28, height: 28, borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'none', border: '1px solid var(--ds-line)',
+              color: 'var(--ds-ink-faint)', fontSize: 16, cursor: 'pointer',
+              transition: 'color 0.15s, border-color 0.15s, background 0.15s',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--ds-ink)'; e.currentTarget.style.borderColor = 'var(--ds-ink-soft)'; e.currentTarget.style.background = 'var(--ds-paper)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--ds-ink-faint)'; e.currentTarget.style.borderColor = 'var(--ds-line)'; e.currentTarget.style.background = 'none' }}
+          >
+            ✕
+          </button>
+        )}
         {step === 'email' ? (
           <>
             <h2
